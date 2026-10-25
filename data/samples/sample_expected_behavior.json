@@ -1,0 +1,116 @@
+{
+  "report_title": "Operation Cobalt Tempest Intrusion Analysis",
+  "expected_sentence_mappings": [
+    {
+      "sentence_index": 0,
+      "text": "In October 2023, security analysts identified a targeted intrusion campaign targeting industrial manufacturing firms.",
+      "expected_techniques": [],
+      "should_abstain": true,
+      "reason": "Background context without specific adversary TTP."
+    },
+    {
+      "sentence_index": 1,
+      "text": "The threat actor initially gained access through spearphishing emails containing a password-protected ZIP archive.",
+      "expected_techniques": ["T1566.001", "T1566.002", "T1566"],
+      "primary_technique": "T1566.001",
+      "technique_name": "Phishing: Spearphishing Attachment",
+      "tactic": "Initial Access",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 2,
+      "text": "Upon opening the lure document, an embedded macro executed a hidden PowerShell script to bypass execution policy restrictions.",
+      "expected_techniques": ["T1059.001", "T1204.002", "T1059"],
+      "primary_technique": "T1059.001",
+      "technique_name": "Command and Scripting Interpreter: PowerShell",
+      "tactic": "Execution",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 3,
+      "text": "The malicious PowerShell command downloaded a secondary payload from an external command and control server.",
+      "expected_techniques": ["T1105", "T1059.001"],
+      "primary_technique": "T1105",
+      "technique_name": "Ingress Tool Transfer",
+      "tactic": "Command and Control",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 4,
+      "text": "To maintain persistence on the compromised host, the adversary created a scheduled task named 'SystemUpdate' configured to run hourly.",
+      "expected_techniques": ["T1053.005", "T1053"],
+      "primary_technique": "T1053.005",
+      "technique_name": "Scheduled Task/Job: Scheduled Task",
+      "tactic": "Persistence",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 5,
+      "text": "The intrusion operators subsequently dumped credentials from the Local Security Authority Subsystem Service (LSASS) process memory.",
+      "expected_techniques": ["T1003.001", "T1003"],
+      "primary_technique": "T1003.001",
+      "technique_name": "OS Credential Dumping: LSASS Memory",
+      "tactic": "Credential Access",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 6,
+      "text": "Following credential acquisition, the attacker conducted internal reconnaissance using native Windows utilities such as whoami and net user.",
+      "expected_techniques": ["T1033", "T1087.001", "T1087"],
+      "primary_technique": "T1033",
+      "technique_name": "System Owner/User Discovery",
+      "tactic": "Discovery",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 7,
+      "text": "The adversary moved laterally across the corporate network by initiating Remote Desktop Protocol sessions using stolen administrative credentials.",
+      "expected_techniques": ["T1021.001", "T1021"],
+      "primary_technique": "T1021.001",
+      "technique_name": "Remote Services: Remote Desktop Protocol",
+      "tactic": "Lateral Movement",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 8,
+      "text": "Before completing their objectives, the operators cleared the Windows security event logs using wevtutil to impede forensic investigations.",
+      "expected_techniques": ["T1070.001", "T1070"],
+      "primary_technique": "T1070.001",
+      "technique_name": "Indicator Removal: Clear Windows Event Logs",
+      "tactic": "Defense Evasion",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 9,
+      "text": "Stolen proprietary design files were compressed into password-protected RAR archives prior to staging.",
+      "expected_techniques": ["T1560.001", "T1560"],
+      "primary_technique": "T1560.001",
+      "technique_name": "Archive Collected Data: Archive via Utility",
+      "tactic": "Collection",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 10,
+      "text": "The staged archives were exfiltrated over an encrypted HTTPS connection to an adversary-controlled server located overseas.",
+      "expected_techniques": ["T1048.003", "T1041", "T1071.001"],
+      "primary_technique": "T1041",
+      "technique_name": "Exfiltration Over C2 Channel",
+      "tactic": "Exfiltration",
+      "should_abstain": false
+    },
+    {
+      "sentence_index": 11,
+      "text": "Incident response teams isolated the affected workstations and deployed endpoint detection rules to mitigate future intrusions.",
+      "expected_techniques": [],
+      "should_abstain": true,
+      "reason": "Defensive incident response action, not adversary behavior."
+    },
+    {
+      "sentence_index": 12,
+      "text": "Organizations are advised to enforce multi-factor authentication across all external remote access services.",
+      "expected_techniques": [],
+      "should_abstain": true,
+      "reason": "Mitigation recommendation, not adversary behavior."
+    }
+  ]
+}

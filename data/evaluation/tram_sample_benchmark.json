@@ -1,0 +1,107 @@
+[
+  {
+    "id": "TRAM-001",
+    "text": "The threat actors delivered spearphishing attachments containing malicious macros to lure enterprise employees.",
+    "labels": ["T1566.001"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-002",
+    "text": "The malicious document executed a stealthy PowerShell command to download subsequent staging files.",
+    "labels": ["T1059.001", "T1105"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-003",
+    "text": "Adversaries scheduled a recurring Windows task named UpdateService to maintain persistence across system reboots.",
+    "labels": ["T1053.005"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-004",
+    "text": "Attackers extracted plaintext credentials and password hashes by dumping LSASS memory using an open-source tool.",
+    "labels": ["T1003.001"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-005",
+    "text": "The intrusion operators ran whoami and net user to discover local user accounts and domain privileges.",
+    "labels": ["T1033", "T1087.001"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-006",
+    "text": "The adversary established Remote Desktop Protocol connections to jump laterally to the primary domain controller.",
+    "labels": ["T1021.001"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-007",
+    "text": "Before terminating the session, the intruder used wevtutil cl to clear the Windows security event logs.",
+    "labels": ["T1070.001"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-008",
+    "text": "The adversary collected confidential project blueprints and compressed them into password-protected RAR archives.",
+    "labels": ["T1560.001"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-009",
+    "text": "The attackers exfiltrated the sensitive data over an encrypted HTTPS connection to their remote infrastructure.",
+    "labels": ["T1041"],
+    "split": "test",
+    "source_report": "Operation Cobalt Tempest"
+  },
+  {
+    "id": "TRAM-010",
+    "text": "Security analysts conducted proactive threat hunting across corporate endpoints during Q3 2024.",
+    "labels": [],
+    "split": "test",
+    "source_report": "Security Advisory"
+  },
+  {
+    "id": "TRAM-011",
+    "text": "All enterprise administrators must enforce multi-factor authentication on every remote portal.",
+    "labels": [],
+    "split": "test",
+    "source_report": "Security Advisory"
+  },
+  {
+    "id": "TRAM-012",
+    "text": "The group utilized mshta.exe to proxy execution of malicious VBScript code disguised as a PDF file.",
+    "labels": ["T1218.005", "T1059.005"],
+    "split": "test",
+    "source_report": "APT29 Campaign Brief"
+  },
+  {
+    "id": "TRAM-013",
+    "text": "Adversaries injected malicious code into svchost.exe processes to evade endpoint detection sensors.",
+    "labels": ["T1055.012"],
+    "split": "test",
+    "source_report": "APT29 Campaign Brief"
+  },
+  {
+    "id": "TRAM-014",
+    "text": "The malware modified registry Run keys under HKCU to ensure persistence upon user login.",
+    "labels": ["T1547.001"],
+    "split": "test",
+    "source_report": "Fin7 Technical Analysis"
+  },
+  {
+    "id": "TRAM-015",
+    "text": "Incident response personnel successfully recovered affected domain controllers from immutable offline backups.",
+    "labels": [],
+    "split": "test",
+    "source_report": "Incident Post-Mortem"
+  }
+]

@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "threatmap"
+version = "0.1.0"
+description = "An Offline, Hybrid RAG Pipeline for Automated MITRE ATT&CK Threat Intelligence Extraction"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Sanika Gunjal"}
+]
+keywords = ["cybersecurity", "threat-intelligence", "mitre-attack", "rag", "nlp", "information-retrieval"]
+dependencies = [
+    "streamlit>=1.30.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+    "scikit-learn>=1.2.0",
+    "rank-bm25>=0.2.2",
+    "sentence-transformers>=2.2.0",
+    "plotly>=5.15.0"
+]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=3.0.0"]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,15 @@
+Threat Intelligence Report: Operation Cobalt Tempest Intrusion Analysis
+
+In October 2023, security analysts identified a targeted intrusion campaign targeting industrial manufacturing firms.
+The threat actor initially gained access through spearphishing emails containing a password-protected ZIP archive.
+Upon opening the lure document, an embedded macro executed a hidden PowerShell script to bypass execution policy restrictions.
+The malicious PowerShell command downloaded a secondary payload from an external command and control server.
+To maintain persistence on the compromised host, the adversary created a scheduled task named 'SystemUpdate' configured to run hourly.
+The intrusion operators subsequently dumped credentials from the Local Security Authority Subsystem Service (LSASS) process memory.
+Following credential acquisition, the attacker conducted internal reconnaissance using native Windows utilities such as whoami and net user.
+The adversary moved laterally across the corporate network by initiating Remote Desktop Protocol sessions using stolen administrative credentials.
+Before completing their objectives, the operators cleared the Windows security event logs using wevtutil to impede forensic investigations.
+Stolen proprietary design files were compressed into password-protected RAR archives prior to staging.
+The staged archives were exfiltrated over an encrypted HTTPS connection to an adversary-controlled server located overseas.
+Incident response teams isolated the affected workstations and deployed endpoint detection rules to mitigate future intrusions.
+Organizations are advised to enforce multi-factor authentication across all external remote access services.

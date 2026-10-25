@@ -1,0 +1,9 @@
+Experiment ID,Method,Micro F1,Macro F1,Recall@1,Recall@5,MRR,Coverage,Abstention Rate,Runtime (s),Status
+Exp A,Lexical Retrieval Only (BM25),0.7586,0.7262,0.9167,1.0,0.9583,1.0,0.0,0.003,Completed
+Exp B,Semantic Retrieval Only (Dense),0.9231,0.8571,1.0,1.0,1.0,0.8,0.2,25.743,Completed
+Exp C,Hybrid Retrieval (RRF),0.8276,0.8095,1.0,1.0,1.0,1.0,0.0,0.477,Completed
+Exp D,Hybrid (Weighted Score Fusion),0.8276,0.8095,1.0,1.0,1.0,1.0,0.0,0.701,Completed
+Exp E,Hybrid + Cross-Encoder Reranker,0.7586,0.7381,0.9167,1.0,0.9583,1.0,0.0,27.463,Completed
+Exp F,Hybrid + Local LLM Classification,,,,,,,,0.0,Skipped (Ollama offline or uninstalled)
+Exp G,Hybrid + Context-Aware LLM Classification,,,,,,,,0.0,Skipped (Ollama offline or uninstalled)
+Exp H,Hybrid + Calibrated Abstention,0.8276,0.8095,1.0,1.0,1.0,1.0,0.0,0.639,Completed
