@@ -12,6 +12,8 @@ paths:
   vector_index_file: "artifacts/vector_index.npy"
   index_metadata_file: "artifacts/index_metadata.json"
   bm25_index_file: "artifacts/bm25_index.pkl"
+  reproduction_kb_file: "data/processed/mitre_attack_50_techniques.json"
+  tram_multi_label_file: "data/raw/tram_multi_label.json"
 
 retrieval:
   embedding_model: "sentence-transformers/all-MiniLM-L6-v2"

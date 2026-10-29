@@ -1,6 +1,6 @@
 """
 Semantic retrieval engine using Sentence Transformers and local vector indexing.
-Uses cosine similarity over normalized embeddings.
+Uses cosine similarity over normalized embeddings with offline fallback.
 """
 
 import json
@@ -11,6 +11,26 @@ from threatmap.logging_config import setup_logger
 from threatmap.schemas import AttackTechnique, RetrievedCandidate
 
 logger = setup_logger("threatmap.semantic")
+
+
+class OfflineFallbackEmbedder:
+    """Lightweight offline dense embedder using TF-IDF feature hashing when hub is offline."""
+
+    def __init__(self, max_features: int = 384):
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        self.vectorizer = TfidfVectorizer(max_features=max_features, lowercase=True)
+        self.is_fitted = False
+
+    def encode(self, texts: List[str], **kwargs) -> np.ndarray:
+        if not self.is_fitted:
+            mat = self.vectorizer.fit_transform(texts).toarray()
+            self.is_fitted = True
+        else:
+            mat = self.vectorizer.transform(texts).toarray()
+
+        norms = np.linalg.norm(mat, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        return (mat / norms).astype(np.float32)
 
 
 class SemanticRetriever:
@@ -32,11 +52,15 @@ class SemanticRetriever:
 
     @property
     def model(self):
-        """Lazy loads SentenceTransformer model to optimize startup time and memory."""
+        """Lazy loads SentenceTransformer model with fallback to offline embedder."""
         if self._model is None:
-            from sentence_transformers import SentenceTransformer
-            logger.info(f"Loading SentenceTransformer model: {self.model_name} on {self.device}")
-            self._model = SentenceTransformer(self.model_name, device=self.device)
+            try:
+                from sentence_transformers import SentenceTransformer
+                logger.info(f"Loading SentenceTransformer model: {self.model_name} on {self.device}")
+                self._model = SentenceTransformer(self.model_name, device=self.device)
+            except Exception as e:
+                logger.warning(f"Could not load SentenceTransformer from remote hub ({e}). Falling back to offline dense embedder.")
+                self._model = OfflineFallbackEmbedder()
         return self._model
 
     def _build_technique_document(self, t: AttackTechnique) -> str:
@@ -64,7 +88,7 @@ class SemanticRetriever:
             convert_to_numpy=True,
             normalize_embeddings=True,  # Ensures unit vectors for exact dot-product cosine similarity
         )
-        self.embeddings = raw_embeddings.astype(np.float32)
+        self.embeddings = np.asarray(raw_embeddings, dtype=np.float32)
         logger.info(f"Generated semantic index with shape {self.embeddings.shape}")
 
     def retrieve(self, query: str, top_k: int = 5) -> List[RetrievedCandidate]:
@@ -76,12 +100,13 @@ class SemanticRetriever:
         if not query_text:
             return []
 
-        query_vec = self.model.encode(
+        raw_q_vec = self.model.encode(
             [query_text],
             convert_to_numpy=True,
             normalize_embeddings=True,
             show_progress_bar=False,
-        ).astype(np.float32)[0]
+        )
+        query_vec = np.asarray(raw_q_vec, dtype=np.float32)[0]
 
         # Dot product of normalized vectors equals cosine similarity
         similarities = np.dot(self.embeddings, query_vec)
