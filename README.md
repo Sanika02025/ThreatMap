@@ -5,7 +5,7 @@
 [![Framework: Streamlit](https://img.shields.io/badge/UI-Streamlit-red.svg)](https://streamlit.io/)
 [![Retrieval: Hybrid RRF](https://img.shields.io/badge/Retrieval-BM25%20%2B%20Dense%20RRF-teal.svg)](https://github.com/)
 [![Privacy: 100% Offline](https://img.shields.io/badge/Privacy-100%25%20Offline%20First-success.svg)](https://github.com/)
-[![Reproduction: Verified](https://img.shields.io/badge/RAG--ATT%26CK-Verified%20Within%202--3%25-success.svg)](artifacts/rag_attack_reproduction_report.md)
+[![Reproduction: Table 3](https://img.shields.io/badge/RAG--ATT%26CK-Table%203%20Reproduction-blue.svg)](scripts/run_retrieval_table3.py)
 
 ---
 
@@ -92,47 +92,50 @@ flowchart TD
 
 ## 4. Empirical Reproduction of RAG-ATT&CK (Schuurman, 2025)
 
-ThreatMap incorporates a reproduction of the experiments in Tables 2 and 3 of the paper across all 19,178 sentences of TRAM v1.3.
+ThreatMap incorporates a 100% non-simulated empirical reproduction protocol for the experiments in Tables 2 and 3 of the paper across TRAM v1.3.
 
-### Table 3: Retrieval Benchmark Reproduction (Recall@10 over 5,143 Labels)
+> [!IMPORTANT]
+> **Zero-Simulation Policy**: All reported reproduction numbers are computed strictly through real dense embedding models (`nomic-ai/nomic-embed-text-v1.5`, `basel/ATTACK-BERT`, `cross-encoder/ms-marco-MiniLM-L-6-v2`) or live/cached LLM inference calls. No synthetic randomness (`np.random`), simulated distributions, or fabricated metrics are used in evaluation code.
 
-| Configuration / Experiment | Target (Paper) | Reproduced (ThreatMap) | Absolute Delta | Reproduction Status |
-| :--- | :---: | :---: | :---: | :---: |
-| **Baseline: Nomic Full Descriptions (#1)** | 80.28% | **80.77%** | +0.49% | **Reproduced** (within 0.5%) |
-| **First Paragraph Description** | 78.45% | **78.48%** | +0.03% | **Reproduced** (within 0.1%) |
-| **Summarized Description** | 77.12% | **76.94%** | -0.18% | **Reproduced** (within 0.2%) |
-| **Chunked 500 Characters** | 79.10% | **78.59%** | -0.51% | **Reproduced** (within 0.6%) |
-| **Chunked 1000 Characters** | 79.80% | **79.53%** | -0.27% | **Reproduced** (within 0.3%) |
-| **ATTACK-BERT Retrieval (#7)** | 86.05% | **86.53%** | +0.48% | **Reproduced** (within 0.5%) |
-| **Reranker (Top-15 Candidates) (#10)** | 74.59% | **74.68%** | +0.09% | **Reproduced** (worse recall confirmed) |
+### Table 3: Retrieval Benchmark Targets & Empirical Results (Recall@k over 5,143 Labels)
 
-*Key Findings Verified*:
-- Reranking degrades retrieval recall from 80.28% to 74.59% because cross-encoders push rare domain-specific techniques down the rank list.
-- ATTACK-BERT yields the strongest domain-specific retrieval at 86.05% Recall@10.
+Evaluated strictly over the 4,070 labelled sentences of TRAM v1.3 with fixed denominator $5,143$ total true technique instances:
+
+| Configuration / Experiment | Target R@10 | Target R@1 | Target R@5 | Target R@20 | Description |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Baseline: Nomic Full Descriptions (#1)** | **80.28%** | 37.44% | 69.06% | 89.08% | Full technique descriptions (nomic-embed-text-v1.5) |
+| **First Paragraph Description** | **77.06%** | — | — | — | First paragraph split at `\n\n` |
+| **Chunked 750 Characters (80 overlap)** | **77.61%** | — | — | — | Max chunk similarity pooling |
+| **Chunked 375 Characters (50 overlap)** | **71.70%** | — | — | — | Max chunk similarity pooling |
+| **ATTACK-BERT Retrieval (#7)** | **86.05%** | 42.22% | 75.66% | 94.08% | Domain-specific BERT encoder (basel/ATTACK-BERT) |
+| **ms-marco Reranker (Top-15 Candidates) (#10)** | **74.59%** | — | — | — | Cross-encoder reranking over top 15 |
+
+*Key Methodological Insights from Paper*:
+- Reranking degrades retrieval recall from 80.28% down to 74.59% because cross-encoders trained on web search queries (MS MARCO) push rare cybersecurity techniques down the rank list.
+- Domain-specific ATTACK-BERT yields the strongest retrieval at 86.05% Recall@10.
 
 ---
 
-### Table 2: LLM Classification Benchmark Reproduction (Evaluated on 50 Classes)
+### Table 2: LLM Classification Benchmark Targets (Evaluated on 50 Classes)
 
-| Paper Run ID | Configuration | Target Macro F1 | Repr. Macro F1 | Repr. Micro F1 | Target Delta | Reproduction Status |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
-| **#19** | BaseLLM 8B (Zero Context, No RAG) | 4.27% | **5.54%** | 5.28% | +1.27% | **Reproduced** (within 1.3%) |
-| **#22** | BaseRAG 8B (Top Candidates) | 19.47% | **18.67%** | 18.04% | -0.80% | **Reproduced** (within 0.8%) |
-| **#23** | Full Descriptions 8B | 6.76% | **6.04%** | 6.20% | -0.72% | **Reproduced** (context collapse confirmed) |
-| **#25** | Optimized RAG 8B ($k=10$) | 16.84% | **15.54%** | 15.65% | -1.30% | **Reproduced** (BaseRAG > Optimized confirmed) |
-| **#27** | Context 1 Sentence | 15.60% | **16.03%** | 16.48% | +0.43% | **Reproduced** (within 0.5%) |
-| **#26** | Context 2 Sentences | 14.21% | **15.08%** | 15.34% | +0.87% | **Reproduced** (within 0.9%) |
-| **#29** | Few-Shot 70B (3 Chat Examples) | 20.15% | **19.53%** | 19.82% | -0.62% | **Reproduced** (within 0.7%) |
-| **#36** | DeepSeek-R1 70B (Reasoning, Stripped) | 23.93% | **23.17%** | 22.04% | -0.76% | **Reproduced** (within 0.8%) |
-| *Variant* | DeepSeek-R1 70B (Think-Included) | ~24.50% | **24.38%** | 22.89% | -0.12% | **Confirmed Paper Behavior** |
-| *Baseline* | TRAM Supervised Fine-Tuned Model | — | — | **51.80%** | — | Cited Baseline |
+| Paper Run ID | Configuration | Target Macro F1 | Target Micro F1 | Description |
+| :---: | :--- | :---: | :---: | :--- |
+| **#19** | BaseLLM 8B (Zero Context, No RAG) | 4.27% | 5.40% | Zero-context baseline prompt (Appendix B) |
+| **#22** | BaseRAG 8B (Top Candidates) | 19.47% | 20.80% | Standard RAG with retrieved candidates (Appendix C) |
+| **#23** | Full Descriptions 8B | 6.76% | 7.90% | Context dilution/collapse from full MITRE text |
+| **#25** | Optimized RAG 8B ($k=10$) | 16.84% | 18.50% | High recall but lower precision on unlabelled rows |
+| **#27** | Context 1 Sentence | 15.60% | 17.20% | Incorporating 1 neighboring sentence before & after |
+| **#26** | Context 2 Sentences | 14.21% | 15.90% | Incorporating 2 neighboring sentences before & after |
+| **#29** | Few-Shot 70B (3 Chat Examples) | 20.15% | 21.30% | 3-shot chat prompt with 70B model (Appendix F) |
+| **#36** | DeepSeek-R1 70B (Reasoning, Stripped) | 23.93% | 21.70% | Reasoning model with `<think>` tags stripped |
+| *Variant* | DeepSeek-R1 70B (Think-Included) | ~24.50% | 22.10% | Technique IDs extracted from reasoning text too |
+| *Baseline* | TRAM Supervised Fine-Tuned Model | — | **51.80%** | Cited CTID fine-tuned benchmark |
 
-*Oddities and Behavioral Anomalies Confirmed*:
+*Empirical Behavioral Anomalies Noted in Paper*:
 1. **BaseRAG beats Optimized RAG on F1**: Providing more candidate context and detailed instructions raised candidate recall, but simultaneously triggered false-positive over-tagging on unlabelled sentences.
 2. **Context Collapse with Long Descriptions**: Passing full MITRE descriptions (Run #23) caused the 8B model to collapse to 6.76% Macro F1 due to attention dilution.
-3. **DeepSeek-R1 Reasoning Analysis**: The paper reported 172,904 raw technique predictions for DeepSeek-R1 because technique IDs were extracted from `<think>` reasoning blocks. Stripping `<think>` tags yields the true, cleaner 23.17% Macro F1.
-
-Full per-class evaluation metrics (Appendices I–Z) and Mermaid chart visualisations (Figs 2–4) are available in [artifacts/rag_attack_reproduction_report.md](artifacts/rag_attack_reproduction_report.md).
+3. **DeepSeek-R1 Reasoning Analysis**: The paper reported 172,904 raw technique predictions for DeepSeek-R1 because technique IDs were extracted from `<think>` reasoning blocks. Stripping `<think>` tags yields the true, cleaner 23.93% Macro F1.
+4. **Execution Requirements**: Running Table 2 requires an active Ollama instance with `llama3.1:8b`, `llama3.3:70b`, and `deepseek-r1:70b`. When offline, evaluation strictly halts without simulating fake numbers.
 
 ---
 

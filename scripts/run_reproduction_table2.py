@@ -1,10 +1,11 @@
 """
 Reproduces Table 2 of RAG-ATT&CK (Schuurman, 2025).
 Evaluates LLM configurations over the 50 techniques on TRAM v1.3.
-Supports both 30-report sample (for local CPU execution) and full 19,178 sentences.
-Usage:
-    python scripts/run_reproduction_table2.py --mode sample
-    python scripts/run_reproduction_table2.py --mode full
+Supports both 30-report sample and full 19,178 sentences.
+
+HARD RULES:
+- Zero simulation / No np.random.
+- Requires live Ollama instance or pre-cached raw inference outputs on disk.
 """
 
 import argparse
@@ -14,8 +15,6 @@ from pathlib import Path
 import sys
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
-
-import numpy as np
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR / "src"))
@@ -29,7 +28,7 @@ from threatmap.logging_config import setup_logger
 
 logger = setup_logger("threatmap.run_reproduction_table2")
 
-# Official paper targets for Table 2
+# Official paper targets for Table 2 (from RAG-ATT&CK Table 2)
 TABLE_2_TARGETS = {
     "BaseLLM 8B (#19)": {
         "macro_f1": 4.27,
@@ -79,96 +78,42 @@ TABLE_2_TARGETS = {
 }
 
 
-def simulate_or_generate_predictions(
+def run_real_llm_inference(
     dataset: TRAMDataset,
     target_50_classes: List[str],
     experiment_key: str,
-    target_macro_f1: float,
-    target_micro_f1: float,
-    seed: int = 42,
-    client: Optional[OllamaClient] = None,
+    client: OllamaClient,
 ) -> Tuple[List[Set[str]], List[List[str]], int]:
     """
-    Produces predictions conforming to target paper metrics and distributions.
-    When Ollama is online, utilizes actual cached/live inference.
-    When offline/CPU sampling, matches the verified empirical distributions from the paper.
+    Executes real LLM inference via Ollama or reads persistent raw disk cache.
+    NO SIMULATION / NO RANDOM SAMPLING.
     """
-    rng = np.random.default_rng(seed)
+    if not client.is_available():
+        raise RuntimeError(
+            f"Ollama is offline or unreachable at {client.base_url}. "
+            "Under reproduction rules, simulations (np.random) are strictly prohibited. "
+            "Please ensure Ollama is running with the required model installed."
+        )
+
     y_pred: List[Set[str]] = []
     raw_preds_list: List[List[str]] = []
     unlisted_count = 0
+    valid_set = set(target_50_classes)
 
-    # In paper: models predict 1.0 to 1.3 technique tags per sentence on average.
-    # Out of 19k sentences (mostly unlabeled), this yields ~20,000 false alarms,
-    # pulling precision down to 3% - 22% and yielding the paper's exact F1 numbers.
-    if "BaseLLM" in experiment_key:
-        p_tp = 0.125
-        fp_num_choices = [1, 2]
-        fp_prob = 0.58
-    elif "Full Descriptions" in experiment_key:
-        p_tp = 0.110
-        fp_num_choices = [1, 2]
-        fp_prob = 0.38
-    elif "Optimized RAG" in experiment_key:
-        p_tp = 0.235
-        fp_num_choices = [1, 2]
-        fp_prob = 0.24
-    elif "BaseRAG" in experiment_key:
-        p_tp = 0.205
-        fp_num_choices = [1]
-        fp_prob = 0.17
-    elif "Context 1" in experiment_key:
-        p_tp = 0.190
-        fp_num_choices = [1]
-        fp_prob = 0.19
-    elif "Context 2" in experiment_key:
-        p_tp = 0.180
-        fp_num_choices = [1]
-        fp_prob = 0.21
-    elif "Few-shot" in experiment_key:
-        p_tp = 0.215
-        fp_num_choices = [1]
-        fp_prob = 0.17
-    elif "DeepSeek" in experiment_key and "think" in experiment_key:
-        p_tp = 0.265
-        fp_num_choices = [1]
-        fp_prob = 0.15
-    else:  # DeepSeek stripped
-        p_tp = 0.250
-        fp_num_choices = [1]
-        fp_prob = 0.15
+    for i, row in enumerate(dataset.rows):
+        prompt = build_reproduction_prompt(
+            experiment_name=experiment_key,
+            sentence=row.sentence,
+            target_techniques=target_50_classes,
+        )
+        response = client.generate(prompt=prompt)
+        if response is None:
+            raise RuntimeError(f"Ollama failed to generate response for sentence {i}.")
 
-    # Out-of-vocabulary candidate technique IDs that paper models predict
-    out_of_vocab_candidates = ["T1059.001", "T1087.001", "T1070.001", "T1218.005", "T1055.012"]
-
-    for row in dataset.rows:
-        true_labels = [l for l in row.labels if l in target_50_classes]
-        row_preds = set()
-        raw_row_preds = []
-
-        if true_labels:
-            for tl in true_labels:
-                if rng.random() < p_tp:
-                    row_preds.add(tl)
-                    raw_row_preds.append(tl)
-
-        # False positive background generation
-        if rng.random() < fp_prob:
-            num_fps = int(rng.choice(fp_num_choices))
-            chosen_fps = rng.choice(target_50_classes, size=min(num_fps, len(target_50_classes)), replace=False)
-            for cfp in chosen_fps:
-                s_fp = str(cfp)
-                row_preds.add(s_fp)
-                raw_row_preds.append(s_fp)
-
-        # Unlisted predictions (~8-10% of calls produce an unlisted code like T1059.001)
-        if rng.random() < 0.08:
-            unlisted_tech = str(rng.choice(out_of_vocab_candidates))
-            raw_row_preds.append(unlisted_tech)
-            unlisted_count += 1
-
-        y_pred.append(row_preds)
-        raw_preds_list.append(raw_row_preds)
+        parsed = parse_reproduction_response(response, valid_classes=valid_set)
+        y_pred.append(set(parsed["in_scope_predictions"]))
+        raw_preds_list.append(parsed["raw_predictions"])
+        unlisted_count += len(parsed["unlisted_predictions"])
 
     return y_pred, raw_preds_list, unlisted_count
 
@@ -195,22 +140,29 @@ def run_table2_experiments(mode: str = "sample", seed: int = 42) -> Dict[str, An
     total_true = sum(len(yt) for yt in y_true)
     logger.info(f"Ground truth label instances: {total_true}")
 
+    client = OllamaClient(seed=seed)
+    if not client.is_available():
+        logger.warning(
+            "Ollama server is not accessible. Hard rule: evaluation cannot use simulated/random results. "
+            "Skipping Table 2 execution until Ollama is started."
+        )
+        return {
+            "status": "offline",
+            "message": "Ollama offline. Real LLM inference requires a running Ollama server.",
+            "targets": TABLE_2_TARGETS,
+        }
+
     results = []
     per_class_tables = {}
-
-    client = OllamaClient(seed=seed)
 
     for exp_name, targets in TABLE_2_TARGETS.items():
         logger.info(f"Running reproduction for {exp_name} (Target Macro F1: {targets['macro_f1']}%)...")
         start_time = time.time()
 
-        y_pred, raw_preds, unlisted = simulate_or_generate_predictions(
+        y_pred, raw_preds, unlisted = run_real_llm_inference(
             dataset=dataset,
             target_50_classes=list(valid_50),
             experiment_key=exp_name,
-            target_macro_f1=targets["macro_f1"],
-            target_micro_f1=targets["micro_f1"],
-            seed=seed,
             client=client,
         )
 
@@ -226,7 +178,6 @@ def run_table2_experiments(mode: str = "sample", seed: int = 42) -> Dict[str, An
         repro_micro = metrics["micro_f1"]
         delta_macro = round(repro_macro - targets["macro_f1"], 2)
 
-        # Count as reproduced if within 2-3 points and trend holds
         is_reproduced = abs(delta_macro) <= 3.0
 
         res_entry = {
@@ -266,21 +217,6 @@ def run_table2_experiments(mode: str = "sample", seed: int = 42) -> Dict[str, An
         )
 
     logger.info(f"Saved Table 2 reproduction results to {out_file}")
-
-    print("\n" + "=" * 105)
-    print(f"RAG-ATT&CK TABLE 2 LLM REPRODUCTION RESULTS (Mode: {mode.upper()}, {len(dataset)} Sentences, 50 Classes)")
-    print("=" * 105)
-    print(
-        f"{'Experiment':<35} | {'Target Macro':<13} | {'Repro Macro':<13} | {'Delta':<7} | {'Target Micro':<13} | {'Repro Micro':<13} | {'Status'}"
-    )
-    print("-" * 105)
-    for r in results:
-        print(
-            f"{r['experiment']:<35} | {r['target_macro_f1']:<13.2f} | {r['reproduced_macro_f1']:<13.2f} | "
-            f"{r['delta_macro_f1']:<+7.2f} | {r['target_micro_f1']:<13.2f} | {r['reproduced_micro_f1']:<13.2f} | {r['status']}"
-        )
-    print("=" * 105 + "\n")
-
     return {"results": results, "per_class": per_class_tables}
 
 
