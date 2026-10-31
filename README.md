@@ -1,241 +1,206 @@
-# ThreatMap: An Offline, Hybrid RAG Pipeline for Automated MITRE ATT&CK Threat Intelligence Extraction
+# ThreatMap: Reproduction Study of RAG-ATT&CK (Schuurman, 2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Framework: Streamlit](https://img.shields.io/badge/UI-Streamlit-red.svg)](https://streamlit.io/)
-[![Retrieval: Hybrid RRF](https://img.shields.io/badge/Retrieval-BM25%20%2B%20Dense%20RRF-teal.svg)](https://github.com/)
-[![Privacy: 100% Offline](https://img.shields.io/badge/Privacy-100%25%20Offline%20First-success.svg)](https://github.com/)
 [![Reproduction: Table 3](https://img.shields.io/badge/RAG--ATT%26CK-Table%203%20Reproduction-blue.svg)](scripts/run_retrieval_table3.py)
 
 ---
 
-## 1. Problem Statement & Motivation
+## 1. What This Is
 
-Cyber Threat Intelligence (CTI) reports describe adversary behaviors in complex, unstructured natural language. Security Operations Centers (SOCs), threat hunters, and cyber defense teams must map these reported behaviors to structured **MITRE ATT&CK®** tactics and techniques to understand adversary capabilities and deploy defensive controls.
+ThreatMap is a reproduction study of:
 
-However, existing approaches face severe limitations:
-1. **Manual Mapping Bottlenecks**: Manual tagging by threat analysts is labor-intensive, error-prone, and inconsistent across different analysts.
-2. **Fine-Tuning Inflexibility**: Supervised classifiers (e.g. fine-tuned BERT models in TRAM v1.3) suffer from catastrophic forgetting and cannot incorporate newly released MITRE ATT&CK techniques without exhaustive dataset re-annotation and re-training.
-3. **Cloud Privacy Hazards**: Sending sensitive incident reports containing proprietary enterprise indicators, internal hostnames, and zero-day vulnerabilities to public cloud LLM APIs breaches data sovereignty and confidentiality mandates.
-4. **Hallucinations & Ungrounded Speculation**: Naive LLMs frequently hallucinate nonexistent technique IDs or assume every sentence in a document represents malicious behavior, flooding security teams with false alarms.
+> Stijn Schuurman. *RAG-ATT&CK: Exploring RAG-Assisted Mapping of Cyber Threat Intelligence to MITRE ATT&CK Techniques*, Master's Thesis, University of Twente, 2025.
 
-**ThreatMap** solves these challenges by implementing an on-premise, 100% offline-capable, hybrid Retrieval-Augmented Generation (RAG) pipeline that combines **BM25 lexical retrieval**, **dense sentence embeddings**, **Reciprocal Rank Fusion (RRF)**, **evidence quote verification**, and **calibrated false-positive abstention**.
+The paper describes a Retrieval-Augmented Generation (RAG) pipeline that maps sentences from Cyber Threat Intelligence (CTI) reports to [MITRE ATT&CK®](https://attack.mitre.org/) techniques. This repository reproduces the retrieval (Table 3) and LLM classification (Table 2) experiments from that paper.
 
----
+**Hardware used for this reproduction**: Intel i5-12450H, 16 GB RAM, no GPU. LLM runs use Ollama with `llama3.1:8b-instruct-q4_0`. 70B and DeepSeek-R1 runs are **not reproduced** (hardware limitation).
 
-## 2. Research Foundation & Lineage
-
-ThreatMap is methodologically grounded in and provides an empirical reproduction of:
-* **Primary Literature Reference**: *RAG-ATT&CK: Exploring RAG-Assisted Mapping of Cyber Threat Intelligence to MITRE ATT&CK Techniques* — Stijn Schuurman, Master's Thesis, University of Twente (2025). *(Citing the February 2025 MTEB leaderboard benchmark)*.
-* **Benchmark Foundation**: **TRAM (Threat Report ATT&CK Mapping)** v1.3 multi-label dataset by the Center for Threat-Informed Defense (CTID) at pinned commit `f29793d8d665f7f552898696e00065ef24a29a20`.
-
-### Key Corrections to Earlier Assumptions
-1. **Dataset Scale & Unlabelled Sentences**:
-   - The paper evaluates over all **19,178 sentences** across 151 CTI reports (not a subset of 5,089 sentences).
-   - Only **4,070 sentences** contain positive labels, while **15,108 sentences** contain no technique labels (negative examples).
-   - Total ground-truth label instances across the dataset sum exactly to **5,143**, matching the paper's per-class supports.
-2. **Class Set & Knowledge Base**:
-   - The evaluation is strictly restricted to **50 specific technique classes**. Technique predictions outside this set are audited and reported as unlisted predictions, but excluded from micro/macro classification metrics.
-3. **True Recall Metric Formulation**:
-   - The paper's Recall@k counts the fraction of total true labels recovered within the top-$k$ candidates (Denominator = $5,143$), rather than whether *any* true label was hit.
+→ Full reproduction report: [`artifacts/reproduction_report.md`](artifacts/reproduction_report.md)
 
 ---
 
-## 3. System Architecture
+## 2. Dataset
+
+The paper and this reproduction use **TRAM v1.3** by the Center for Threat-Informed Defense (CTID):
+
+| Metric | Value |
+| :--- | ---: |
+| Total sentences | **19,178** |
+| Sentences with in-scope labels | **4,070** |
+| Total label instances (50 classes) | **5,143** |
+| CTI reports | 151 |
+| Target technique classes | 50 |
+
+Dataset pinned at commit `f29793d8d665f7f552898696e00065ef24a29a20`.
+
+> [!NOTE]
+> The paper evaluated on all 19,178 sentences (not just the 4,070 labelled ones). Unlabelled sentences appear as negative examples and inflate the false-positive denominator, which explains the low precision numbers in Table 2.
+
+---
+
+## 3. Research Foundation
+
+* **Primary Reference**: *RAG-ATT&CK* (Schuurman, 2025) — describes using local Llama and DeepSeek models with nomic and ATTACK-BERT embeddings for technique mapping.
+* **Dataset**: TRAM v1.3 (CTID) — **19,178 sentences** across 151 CTI reports, **50 technique classes**, **5,143 label instances**.
+* **Retrieval models**: `nomic-ai/nomic-embed-text-v1.5`, `basel/ATTACK-BERT`
+* **Reranker**: `cross-encoder/ms-marco-MiniLM-L-6-v2`
+* **LLM**: Ollama `llama3.1:8b-instruct-q4_0` (8B only; 70B/R1 not run)
+
+---
+
+## 4. Reproduction Results
+
+### Table 3: Retrieval Recall@k
+
+Evaluated over all 4,070 labelled sentences with fixed denominator = 5,143.
+Primary nomic prefix: `search_query:` for sentences, `search_document:` for descriptions.
+
+| Configuration | Paper R@10 | Reproduced R@10 | Delta |
+| :--- | ---: | ---: | ---: |
+| Nomic Full (with prefixes — PRIMARY) | 80.28% | 80.52% | +0.24% |
+| Nomic Full (no prefixes — variant) | 80.28% | 81.16% | +0.88% |
+| Nomic First Paragraph (with pfx) | 77.06% | 69.45% | −7.61% |
+| Nomic Chunks 750/80 (with pfx) | 77.61% | 74.92% | −2.69% |
+| Nomic Chunks 375/50 (with pfx) | 71.70% | 71.86% | +0.16% |
+| ATTACK-BERT Full | 86.05% | 81.84% | −4.21% |
+| ms-marco Reranker (Top 15) | 74.59% | 80.75% | +6.16% |
+
+See [`artifacts/retrieval_table3_real_results.json`](artifacts/retrieval_table3_real_results.json) for full R@1/5/10/20 breakdown.
+
+**Deviations**:
+- **ATTACK-BERT** (−4.21%): Cause not identified. Untested hypotheses: text cleaning, pooling strategy.
+- **Reranker** (+6.16% vs paper −5.69% vs nomic): Qualitative reversal — in our run the reranker *improves* over nomic, while the paper shows it *hurts*. Cause not identified.
+
+### Table 2: LLM Classification (8B only, ~191-sentence sample)
+
+> [!WARNING]
+> The LLM scorer ran on a **~191-sentence sample** (2 CTI reports), not the paper's 19,178 sentences. These metrics are directional only — compare trend, not values.
+
+| Exp | Name | Micro F1 (sample) | Paper Micro F1 | Paper Macro F1 | Status |
+| --- | :--- | ---: | ---: | ---: | :--- |
+| #19 | BaseLLM 8B (no RAG) | 4.00% (pilot) | 4.77% | 4.27% | DIRECTIONAL |
+| #22 | BaseRAG 8B (nomic, k=10) | 30.00% (pilot) | 18.81% | 19.47% | DIRECTIONAL (tiny sample) |
+| #25 | Optimized RAG 8B (ATTACK-BERT, k=10) | 40.00% (pilot) | 15.40% | 16.84% | DIRECTIONAL (tiny sample) |
+| #27 | Context 1-sentence (nomic, k=10) | 37.50% (pilot) | 13.58% | 15.60% | DIRECTIONAL (tiny sample) |
+| #23 | Full Desc 8B | — | — | 6.76% | NOT RUN (time) |
+| #24 | Optimized RAG full desc 8B | — | — | — | NOT RUN (time) |
+| #26 | Context 2-sentences 8B | — | — | — | NOT RUN (time) |
+| #28 | Few-shot 8B | — | — | — | NOT RUN (time) |
+| #29 | BaseRAG 70B | — | — | — | NOT RUN (no GPU) |
+| #30 | BaseRAG DeepSeek-R1 70B | — | — | — | NOT RUN (no GPU) |
+| #36 | Optimized RAG DeepSeek-R1 70B | — | — | — | NOT RUN (no GPU) |
+
+The pilot scores use only 20 sentences (3 gold labels, 2 classes with support) — the CI is very wide and the numbers are not reliable.
+
+### Extension: BM25 + RRF Fusion (not in paper)
+
+| Method | R@1 | R@5 | R@10 | R@20 |
+| :--- | ---: | ---: | ---: | ---: |
+| Paper: Nomic Full (target) | — | — | 80.28% | — |
+| Nomic w/ prefixes (reproduced) | 35.82% | 68.60% | 80.52% | 90.43% |
+| BM25 alone | 23.20% | 49.83% | 64.38% | 80.07% |
+| BM25 + Nomic RRF k=60 | 32.94% | 65.14% | 78.55% | 89.99% |
+
+RRF fusion *hurts* vs nomic alone (78.55% < 80.52%). BM25 alone is substantially weaker. This is an extension result not in the paper.
+
+---
+
+## 5. System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Ingestion ["1. Document Ingestion & NLP Preprocessing"]
-        A["Threat Report (Text / PDF)"] --> B["Document Parser"]
-        B --> C["Cyber-Aware Sentence Splitter"]
-        C --> D["Context Window Builder (Contiguous Doc Rows)"]
+    subgraph Ingestion ["1. Document Ingestion"]
+        A["Threat Report (Text)"] --> B["Sentence Splitter"]
+        B --> C["Context Window Builder"]
     end
 
-    subgraph Retrieval ["2. Hybrid Retrieval Engine"]
-        D --> E1["BM25 Lexical Retriever"]
-        D --> E2["Dense Semantic Retriever (Nomic / MiniLM)"]
-        
-        KB[("50-Technique MITRE KB (STIX 2.1 / Oct 2024)")] --> E1
-        KB --> E2
-        
-        E1 --> F["Candidate Rank Lists"]
-        E2 --> F
-        
-        F --> G["Reciprocal Rank Fusion (RRF, k=60)"]
-        G --> H["Deduplicated Candidate Pool (Top-K)"]
-        H --> I["Optional Cross-Encoder Reranker"]
+    subgraph Retrieval ["2. Retrieval"]
+        C --> E2["Dense Retriever (Nomic / ATTACK-BERT)"]
+        KB[("50-Technique MITRE KB")] --> E2
+        E2 --> H["Top-K Candidates"]
     end
 
-    subgraph Classification ["3. Evidence Grounding & Classification"]
-        I --> J{"Local LLM (Ollama) Available?"}
-        J -- "Yes" --> K["Prompt Builder (Appendix B-F Verbatim)"]
-        K --> L["LLM Inference (Llama 3.1 8B / 70B / DeepSeek-R1)"]
-        L --> M["Plain-Text Regex Parser ('Txxxx : Name')"]
-        J -- "No / Offline" --> N["Retrieval-Only Candidate Fallback"]
-        
-        M --> O["Evidence Quote Grounding Validator"]
-        N --> O
-        KB --> O
-    end
-
-    subgraph Assurance ["4. False-Positive Control & Interface"]
-        O --> P["Abstention Engine (Confidence & Mitigation Filter)"]
-        P --> Q["Verified Structured Prediction"]
-        
-        Q --> R["Streamlit Professional Dashboard"]
-        Q --> S["Audit Exports (CSV / JSON / JSONL)"]
-        Q --> T["Evaluation Lab (Reproduced Tables 2 & 3)"]
+    subgraph Classification ["3. LLM Classification"]
+        H --> K["Prompt Builder (paper appendices)"]
+        K --> L["LLM Inference (Ollama llama3.1:8b)"]
+        L --> M["Regex Parser"]
     end
 ```
-
----
-
-## 4. Empirical Reproduction of RAG-ATT&CK (Schuurman, 2025)
-
-ThreatMap incorporates a 100% non-simulated empirical reproduction protocol for the experiments in Tables 2 and 3 of the paper across TRAM v1.3.
-
-> [!IMPORTANT]
-> **Zero-Simulation Policy**: All reported reproduction numbers are computed strictly through real dense embedding models (`nomic-ai/nomic-embed-text-v1.5`, `basel/ATTACK-BERT`, `cross-encoder/ms-marco-MiniLM-L-6-v2`) or live/cached LLM inference calls. No synthetic randomness (`np.random`), simulated distributions, or fabricated metrics are used in evaluation code.
-
-### Table 3: Retrieval Benchmark Empirical Results vs Paper Targets (Recall@k over 5,143 Labels)
-
-Evaluated strictly over the 4,070 labelled sentences of TRAM v1.3 with fixed denominator $5,143$ total true technique instances:
-
-| Configuration / Experiment | Paper R@10 | Empirical R@10 | Absolute Delta | Reproduction Status | R@1 | R@5 | R@20 |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Baseline: Nomic Full (with prefixes)** | **80.28%** | **80.52%** | **+0.24%** | **MATCH (<= 3%)** | 35.82% | 68.60% | 90.43% |
-| **Baseline: Nomic Full (no prefixes)** | **80.28%** | **81.16%** | **+0.88%** | **MATCH (<= 3%)** | 36.89% | 69.38% | 91.29% |
-| **Nomic First Paragraph (with prefixes)** | 77.06% | 69.45% | -7.61% | Deviation (paragraph split) | — | — | — |
-| **Nomic First Paragraph (no prefixes)** | 77.06% | 74.08% | -2.98% | **MATCH (<= 3%)** | — | — | — |
-| **Nomic Chunks 750/80 (with prefixes)** | 77.61% | 74.92% | -2.69% | **MATCH (<= 3%)** | — | — | — |
-| **Nomic Chunks 750/80 (no prefixes)** | 77.61% | 77.19% | **-0.42%** | **MATCH (<= 3%)** | — | — | — |
-| **Nomic Chunks 375/50 (with prefixes)** | 71.70% | 71.86% | **+0.16%** | **MATCH (<= 3%)** | — | — | — |
-| **Nomic Chunks 375/50 (no prefixes)** | 71.70% | 74.65% | +2.95% | **MATCH (<= 3%)** | — | — | — |
-| **ATTACK-BERT Full** | **86.05%** | **81.84%** | -4.21% | Deviation (tokenizer/KB diff) | 37.86% | 70.31% | 91.83% |
-| **ms-marco Reranker (Top-15)** | **74.59%** | **80.75%** | +6.16% | Confirmed Baseline Order Preserved | 33.91% | 66.95% | 90.43% |
-
-*Analysis of Empirical Numbers & Deviations*:
-- **Baseline Nomic Reproduction**: The headline baseline configuration (`nomic-ai/nomic-embed-text-v1.5` on full descriptions) reproduced within **+0.24%** (80.52% vs 80.28% paper target), confirming exact alignment on dataset filtering, technique set, and denominator formulation.
-- **Chunking Scaling**: The 375-char chunking matches within **+0.16%** (71.86% vs 71.70%), and 750-char chunking (without prefixes) matches within **-0.42%** (77.19% vs 77.61%).
-- **First Paragraph Split**: When splitting strictly on `\n\n`, descriptions with single paragraphs or differing markdown headers omit critical technique details, yielding 69.45% with prefixes and 74.08% without prefixes.
-- **ATTACK-BERT**: Scored 81.84% vs 86.05% paper target. ATTACK-BERT was fine-tuned on earlier MITRE ATT&CK CTI text; slight discrepancies arise from the MITRE CTI version (Oct 2024 vs paper's download date) and maximum sequence length handling.
-- **ms-marco Reranker**: Scored 80.75% vs 74.59% paper target. Reranking re-ordered top-15 candidates; when candidates at ranks 11-15 are demoted, they remain within the top-15, preserving top-10 recall higher than the paper's aggressive demotion.
-
----
-
-### Table 2: LLM Classification Benchmark Targets (Evaluated on 50 Classes)
-
-| Paper Run ID | Configuration | Target Macro F1 | Target Micro F1 | Description |
-| :---: | :--- | :---: | :---: | :--- |
-| **#19** | BaseLLM 8B (Zero Context, No RAG) | 4.27% | 5.40% | Zero-context baseline prompt (Appendix B) |
-| **#22** | BaseRAG 8B (Top Candidates) | 19.47% | 20.80% | Standard RAG with retrieved candidates (Appendix C) |
-| **#23** | Full Descriptions 8B | 6.76% | 7.90% | Context dilution/collapse from full MITRE text |
-| **#25** | Optimized RAG 8B ($k=10$) | 16.84% | 18.50% | High recall but lower precision on unlabelled rows |
-| **#27** | Context 1 Sentence | 15.60% | 17.20% | Incorporating 1 neighboring sentence before & after |
-| **#26** | Context 2 Sentences | 14.21% | 15.90% | Incorporating 2 neighboring sentences before & after |
-| **#29** | Few-Shot 70B (3 Chat Examples) | 20.15% | 21.30% | 3-shot chat prompt with 70B model (Appendix F) |
-| **#36** | DeepSeek-R1 70B (Reasoning, Stripped) | 23.93% | 21.70% | Reasoning model with `<think>` tags stripped |
-| *Variant* | DeepSeek-R1 70B (Think-Included) | ~24.50% | 22.10% | Technique IDs extracted from reasoning text too |
-| *Baseline* | TRAM Supervised Fine-Tuned Model | — | **51.80%** | Cited CTID fine-tuned benchmark |
-
-*Empirical Behavioral Anomalies Noted in Paper*:
-1. **BaseRAG beats Optimized RAG on F1**: Providing more candidate context and detailed instructions raised candidate recall, but simultaneously triggered false-positive over-tagging on unlabelled sentences.
-2. **Context Collapse with Long Descriptions**: Passing full MITRE descriptions (Run #23) caused the 8B model to collapse to 6.76% Macro F1 due to attention dilution.
-3. **DeepSeek-R1 Reasoning Analysis**: The paper reported 172,904 raw technique predictions for DeepSeek-R1 because technique IDs were extracted from `<think>` reasoning blocks. Stripping `<think>` tags yields the true, cleaner 23.93% Macro F1.
-4. **Execution Requirements**: Running Table 2 requires an active Ollama instance with `llama3.1:8b`, `llama3.3:70b`, and `deepseek-r1:70b`. When offline, evaluation strictly halts without simulating fake numbers.
-
----
-
-## 5. ThreatMap Extensions Beyond the Research Paper
-
-ThreatMap evaluates several architectural extensions on the exact same TRAM multi-label protocol:
-
-| Method / Extension | Micro F1 | Macro F1 | Recall@10 | Precision@1 | Notes |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| **RAG-ATT&CK Best Local (BaseRAG 8B)** | 18.04% | 18.67% | 80.28% | 52.14% | Paper configuration |
-| **ThreatMap Hybrid RRF (BM25 + Dense)** | **24.81%** | **23.15%** | **88.42%** | **61.30%** | +8.14% Recall@10 boost |
-| **ThreatMap + Calibrated Abstention** | **28.45%** | **26.90%** | 86.10% | **68.75%** | Suppresses non-adversarial false positives |
-| **ThreatMap + Verbatim Grounding Validator** | **29.12%** | **27.44%** | 85.90% | **71.20%** | Eliminates hallucinated technique tags |
 
 ---
 
 ## 6. Technology Stack
 
-* **Core Language**: Python 3.10+ (tested on Python 3.11, 3.12, 3.13, 3.14 on Windows / Linux / macOS)
-* **User Interface**: Streamlit & Plotly Express
-* **Lexical Retrieval**: `rank-bm25` (BM25 Okapi)
-* **Semantic Embeddings**: `sentence-transformers` (`all-MiniLM-L6-v2`, `nomic-embed-text-v1.5`)
-* **Deep Learning Runtime**: PyTorch (CPU-optimized, zero GPU required)
-* **Vector Index**: Persistent normalized NumPy vector index (dot-product cosine similarity)
-* **Local LLM Engine**: Ollama (`llama3.1:8b`, `llama3.3:70b`, `deepseek-r1:70b`) with persistent disk response cache
-* **Data Schemas & Validation**: Pydantic v2
-* **Automated Testing**: Pytest (100% offline test suite, 35 passing unit and integration tests)
+* **Language**: Python 3.10+
+* **Embeddings**: `sentence-transformers` (`nomic-embed-text-v1.5`, `ATTACK-BERT`)
+* **Reranker**: `cross-encoder/ms-marco-MiniLM-L-6-v2`
+* **LLM**: Ollama (`llama3.1:8b-instruct-q4_0`)
+* **Lexical**: `rank-bm25` (BM25 Okapi — used in extension, not paper)
+* **Vector Index**: NumPy dot-product (normalized cosine)
+* **Testing**: pytest
 
 ---
 
-## 7. Quickstart & Installation Guide
-
-### Windows (PowerShell) Setup
+## 7. Quickstart
 
 ```powershell
-# 1. Clone repository & navigate to directory
+# Clone and install
 git clone https://github.com/your-username/ThreatMap.git
 cd ThreatMap
-
-# 2. Create and activate virtual environment
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-# 3. Install dependencies in editable mode
 pip install -e .
 
-# 4. Run full test suite (35 unit and integration tests)
+# Run tests
 python -m pytest tests/ -v
 
-# 5. Launch the Streamlit ThreatMap Dashboard
-streamlit run app.py
-```
-
-### Reproducing RAG-ATT&CK Experiments
-
-```powershell
-# 1. Download and verify TRAM v1.3 dataset (19,178 sentences at pinned commit f29793d8...)
-python scripts/download_tram_data.py
-
-# 2. Build the 50-technique MITRE ATT&CK Enterprise v16.0 Knowledge Base
-python scripts/build_50_techniques_kb.py
-
-# 3. Reproduce Table 3 Retrieval Benchmarks
+# Reproduce Table 3 retrieval (uses pre-computed embeddings)
 python scripts/run_retrieval_table3.py
 
-# 4. Reproduce Table 2 Classification Benchmarks (supports --mode sample or --mode full)
-python scripts/run_reproduction_table2.py --mode full
+# Score LLM sample (requires Ollama with llama3.1:8b-instruct-q4_0)
+python scripts/run_llm_sample.py --mode sample --experiments 19 22 25 27
+python scripts/score_llm_sample.py --mode sample
 
-# 5. Generate Comprehensive Reproduction Report (Appendices I-Z & Figs 2-4)
+# Run BM25+RRF extension
+python scripts/run_bm25_rrf.py
+
+# Generate figures (Fig 2 & 4)
+python scripts/generate_figures.py
+
+# Generate full reproduction report
 python scripts/generate_reproduction_report.py
 ```
 
 ---
 
-## 8. Limitations & Privacy Protections
+## 8. Integrity Rules
 
-* **Hardware Independence**: Default setup requires only CPU and approximately 500MB of RAM. Local LLM inference (e.g. Llama 3) requires 8GB+ RAM if enabled through Ollama.
-* **Document Length**: ThreatMap processes documents sentence-by-sentence. Long reports (>500 sentences) take approximately 15–20 seconds on modern CPUs.
-* **Prompt Injection**: Threat reports describing prompt injection vulnerabilities are safely isolated; report text is bounded into an untrusted observational evidence block.
-* **Zero Telemetry**: No user text, uploaded files, or extracted techniques are ever transmitted over the internet.
-
----
-
-## 9. References & Attribution
-
-* **RAG-ATT&CK**: Stijn Schuurman. *RAG-ATT&CK: Exploring RAG-Assisted Mapping of Cyber Threat Intelligence to MITRE ATT&CK Techniques*, Master's Thesis, University of Twente (2025).
-* **TRAM v1.3**: Center for Threat-Informed Defense (CTID). Available: [https://github.com/center-for-threat-informed-defense/tram](https://github.com/center-for-threat-informed-defense/tram) (Pinned commit `f29793d8d665f7f552898696e00065ef24a29a20`).
-* **MITRE ATT&CK®**: The MITRE Corporation. Available: [https://attack.mitre.org/](https://attack.mitre.org/). Content licensed under Apache 2.0.
-* **BM25 Okapi**: Robertson, S., & Zaragoza, H. (2009). *The Probabilistic Relevance Framework: BM25 and Beyond*. Foundations and Trends in Information Retrieval.
-* **Sentence Transformers**: Reimers, N., & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. EMNLP.
+1. **No simulated results**: All numbers come from real embedding computations or real Ollama calls cached to disk.
+2. **No targets changed to fit results**: Paper targets in `scripts/` are sacred.
+3. **Speculation labelled**: Deviations not yet tested are marked "untested hypothesis".
+4. **No 70B/R1 results**: Hardware does not permit these; they are marked NOT RUN.
+5. **Bootstrap CI**: The only randomness in the scorer (seed=42, 1000 resamples, documented).
 
 ---
 
-## 10. License
+## 9. What the Paper Found (Not Reproduced at Full Scale)
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+The paper (Schuurman 2025) found:
+- **ATTACK-BERT**: R@10 = 86.05% (best retrieval model)
+- **BaseRAG 8B**: Micro F1 = 18.81% / Macro F1 = 19.47% (best 8B LLM result)
+- **DeepSeek-R1 70B**: Macro F1 ≈ 23.17% stripped (best overall)
+- **Reranker hurts**: Adding a cross-encoder reranker degraded recall vs dense-only
+- **The paper did NOT compare against BM25 or lexical-only retrieval**
+
+---
+
+## 10. References
+
+* Schuurman, S. (2025). *RAG-ATT&CK: Exploring RAG-Assisted Mapping of Cyber Threat Intelligence to MITRE ATT&CK Techniques*. Master's Thesis, University of Twente.
+* CTID. *TRAM v1.3*. [github.com/center-for-threat-informed-defense/tram](https://github.com/center-for-threat-informed-defense/tram) (commit `f29793d8`)
+* MITRE ATT&CK® Enterprise v16.0 (October 2024). [attack.mitre.org](https://attack.mitre.org/)
+
+---
+
+## 11. License
+
+MIT License — see [LICENSE](LICENSE).

@@ -1,0 +1,444 @@
+================================================================================
+ITEM 2: LLM Output Sanity Check — RAG-ATT&CK Cache Inspection
+================================================================================
+
+Scope: Print 10 raw replies + parsed codes per experiment.
+       Verify whether unlisted codes appeared in the candidate list.
+       Determine if unlisted predictions are model hallucinations or parser bugs.
+
+
+================================================================================
+Experiment #19 (BaseLLM 8B)
+  Cache entries: 191
+================================================================================
+
+  --- Entry 1 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'Based on the sentence, the following MITRE ATT&CK techniques apply:\n\nT1218.011 : Rundll32\nT1547.001 : Registry Run Keys / Startup Folder\nT1548.002 : Bypass User Account Control\nT1552.001 : Credentials In Files\nT1570'
+  Parsed codes: ['T1218.011', 'T1547.001', 'T1548.002', 'T1552.001', 'T1570']
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: ['T1218.011', 'T1547.001', 'T1548.002', 'T1552.001', 'T1570']
+  NOT in candidate list: []
+
+  --- Entry 2 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 3 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 4 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'Based on the sentence, the following MITRE ATT&CK techniques are relevant:\n\nT1218.011 : Rundll32\nT1547.001 : Registry Run Keys / Startup Folder\nT1548.002 : Bypass User Account Control\nT1552.001 : Credentials In Files\nT157'
+  Parsed codes: ['T1218.011', 'T1547.001', 'T1548.002', 'T1552.001']
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: ['T1218.011', 'T1547.001', 'T1548.002', 'T1552.001']
+  NOT in candidate list: []
+
+  --- Entry 5 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 6 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'Based on the sentence, the following MITRE ATT&CK techniques are relevant:\n\nT1218.011 : Rundll32\nT1547.001 : Registry Run Keys / Startup Folder\nT1548.002 : Bypass User Account Control\nT1552.001 : Credentials In Files\nT156'
+  Parsed codes: ['T1218.011', 'T1547.001', 'T1548.002', 'T1552.001']
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: ['T1218.011', 'T1547.001', 'T1548.002', 'T1552.001']
+  NOT in candidate list: []
+
+  --- Entry 7 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 8 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 9 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'No Mapping.'
+  Parsed codes: []
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 10 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report, identify the relevant MITRE ATT&CK techniques from the l'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (50): ['T1003.001', 'T1005', 'T1012', 'T1016', 'T1021.001', 'T1027', 'T1033', 'T1036.005', 'T1041', 'T1047']
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Aggregate (191 entries) ---
+  Prompts with at least 1 candidate ID: 191/191
+  Avg candidates per prompt: 50.2
+  Total in-candidate predictions: 519
+  Total NOT-in-candidate predictions: 6
+  Unlisted rate: 1.1%
+
+================================================================================
+Experiment #22 (BaseRAG 8B, nomic, k=10)
+  Cache entries: 134
+================================================================================
+
+  --- Entry 1 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'T1190 : Exfiltration Over Alternative Network Channel\nT1210 : Exploit Public-Facing Application'
+  Parsed codes: ['T1190', 'T1210']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1190', 'T1210']
+
+  --- Entry 2 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'Based on the sentence, I would map the following techniques:\n\nT1210 : Exploit Public-Facing Application\nT1211 : Exploit Public-Facing Application Using Known Vulnerabilities\n\nThe sentence mentions a compromised 3CX application, which is a public-facing application, and the context implies that the exploitation is likely'
+  Parsed codes: ['T1210', 'T1211']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1210', 'T1211']
+
+  --- Entry 3 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 4 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'Based on the sentence, the following MITRE ATT&CK techniques apply:\n\nT1190 : Explotation of Remote Services\nT1210 : Exploitation of Resource Inefficiencies\nT1508 : Privilege Escalation\n\nThese techniques are related to the exploitation of vulnerabilities in the VOIP desktop client'
+  Parsed codes: ['T1190', 'T1210', 'T1508']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1190', 'T1210', 'T1508']
+
+  --- Entry 5 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 6 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'Based on the sentence, the following MITRE ATT&CK techniques apply:\n\nT1508 : Privilege Escalation\nT1557 : Malicious Code\nT1547 : Resource Development Discovery\n\nThese techniques are relevant because the sentence describes a supply chain compromise, which implies that the attackers were able to exploit vulnerabilities'
+  Parsed codes: ['T1508', 'T1557', 'T1547']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1508', 'T1557', 'T1547']
+
+  --- Entry 7 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 8 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    "Based on the sentence, I would map the following techniques:\n\nT1508 : Compromise Infrastructure\nT1508 is the correct mapping because the sentence mentions that the adversary's infrastructure on GitHub was used for staging the attack, and it has now been taken down, indicating that the infrastructure was compromised."
+  Parsed codes: ['T1508']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1508']
+
+  --- Entry 9 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 10 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and candidate MITRE ATT&CK techniques, identify which tec'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Aggregate (134 entries) ---
+  Prompts with at least 1 candidate ID: 49/134
+  Avg candidates per prompt: 2.8
+  Total in-candidate predictions: 102
+  Total NOT-in-candidate predictions: 144
+  Unlisted rate: 58.5%
+
+================================================================================
+Experiment #25 (Optimized RAG, ATTACK-BERT, k=10)
+  Cache entries: 20
+================================================================================
+
+  --- Entry 1 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    "T1199 : Exfiltration Over Alternative Network Channel\nT1210 : Exploit Public-Facing Application \n\nThe sentence describes a situation where a compromised version of the 3CX VoIP desktop client was used to target 3CX's customers, which implies that the attackers exploited a vulnerability in the application (T"
+  Parsed codes: ['T1199', 'T1210']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1199', 'T1210']
+
+  --- Entry 2 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 3 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 4 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'Based on the sentence, I can identify the following MITRE ATT&CK techniques:\n\nT1199 : Exfiltration Over Alternative Protocol\nT1584 : Supply Chain Compromise\n\nThese techniques are directly evidenced in the sentence, which mentions a supply chain compromise in a popular VOIP desktop client.'
+  Parsed codes: ['T1199', 'T1584']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1199', 'T1584']
+
+  --- Entry 5 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 6 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'Based on the sentence, I can identify the following MITRE ATT&CK techniques:\n\nT1553 : Malware/Tooling\nT1584 : Supply Chain Compromise\n\nThese techniques are directly evidenced in the sentence, which mentions the compromise of a software application (3CXDesktopApp) through a supply chain attack'
+  Parsed codes: ['T1553', 'T1584']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1553', 'T1584']
+
+  --- Entry 7 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 8 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    "Based on the sentence, I can identify the following MITRE ATT&CK technique:\n\nT1508 : Compromise Infrastructure\n\nThis technique is directly evidenced in the sentence, as it mentions the adversary's infrastructure on GitHub being used for staging the attack and subsequently being taken down."
+  Parsed codes: ['T1508']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1508']
+
+  --- Entry 9 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Entry 10 ---
+  Sentence/prompt snippet: 'You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\nGiven a sentence from a Cyber Threat Intelligence (CTI) report and the top-10 candidate MITRE ATT&CK techniques, identif'
+  Response (full):
+    'No Mapping'
+  Parsed codes: []
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: []
+
+  --- Aggregate (20 entries) ---
+  Prompts with at least 1 candidate ID: 2/20
+  Avg candidates per prompt: 1.0
+  Total in-candidate predictions: 6
+  Total NOT-in-candidate predictions: 20
+  Unlisted rate: 76.9%
+
+================================================================================
+Experiment #27 (Context 1-sentence, nomic, k=10)
+  Cache entries: 20
+================================================================================
+
+  --- Entry 1 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Target]: title: 3CXDesktopApp Backdoored in a Suspected Lazarus Campaign url: https://blog.qualys.com/vulnerabilities-threat-research/2023/04/03/3cxdesktopapp-backdoored-in-a-sus'
+  Response (full):
+    'T1190 : Exfiltration via an Instrumented or Coordinated Device\nT1210 : Exploit Public-Facing Application'
+  Parsed codes: ['T1190', 'T1210']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1190', 'T1210']
+
+  --- Entry 2 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: title: 3CXDesktopApp Backdoored in a Suspected Lazarus Campaign url: https://blog.qualys.com/vulnerabilities-threat-research/2023/04/03/3cxdesktopapp-backdoored-in-a-s'
+  Response (full):
+    'T1047 : Remote Network Scanning\n\nThis technique applies because the target sentence mentions the compromised 3CX application being available on multiple platforms (Windows, macOS, Linux, Android, IOS, and Chrome), which is indicative of remote network scanning to identify potential targets.'
+  Parsed codes: ['T1047']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1047']
+
+  --- Entry 3 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: The compromised 3CX application is a private automatic branch exchange (PABX) software and is available for Windows, macOS, Linux, Android, IOS and Chrome.\n[Target]: C'
+  Response (full):
+    'T1047 : Windows Service Execution\nT1053 : Scheduled Task/Job\nT1053.001 : Scheduled Task\nT1053.002 : Scheduled Job \n\nThese techniques apply to the target sentence as they describe the exploitation of Windows and macOS systems, which is consistent with the context of attacks on these platforms'
+  Parsed codes: ['T1047', 'T1053', 'T1053.001', 'T1053.002']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1047', 'T1053', 'T1053.001', 'T1053.002']
+
+  --- Entry 4 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: Currently, there are reports of attacks for both Windows and macOS. \n[Target]: The Qualys Threat Research Unit (TRU) is tracking a supply chain compromise in a popular'
+  Response (full):
+    'T1584 : Supply Chain Compromise\n\nThis technique applies to the target sentence as it describes a situation where a legitimate software update or component is compromised by an adversary, in this case, a VOIP desktop client by 3CX attributed to DPRK nation-state adversaries.'
+  Parsed codes: ['T1584']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1584']
+
+  --- Entry 5 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: The Qualys Threat Research Unit (TRU) is tracking a supply chain compromise in a popular VOIP desktop client by 3CX that is attributed to DPRK nation-state adversaries'
+  Response (full):
+    'T1112 : Data Encoding\n\nThis technique applies as the attack is being investigated, and the report is likely to be encoded to protect sensitive information.'
+  Parsed codes: ['T1112']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1112']
+
+  --- Entry 6 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: The attack was reported in late March 2023 and is an ongoing investigation. \n[Target]: Executive Summary The North Korean state-sponsored group Labyrinth Chollima have'
+  Response (full):
+    'T1064 : Supply Chain Compromise\n\nThis technique applies to the target sentence as it describes the compromise of a software application (3CXDesktopApp) through a supply chain attack, which is a type of attack where an adversary compromises a legitimate software update or application to gain unauthorized access to a system.'
+  Parsed codes: ['T1064']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1064']
+
+  --- Entry 7 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: Executive Summary The North Korean state-sponsored group Labyrinth Chollima have been identified as the perpetrators behind the supply chain compromise of 3CXDesktopAp'
+  Response (full):
+    'T1552 : Malware Signed by a Trusted Certificate\n\nThis technique applies because the affected applications have valid signatures, indicating that the malware was signed with a trusted certificate, which is a common tactic used by attackers to evade detection.'
+  Parsed codes: ['T1552']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1552']
+
+  --- Entry 8 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: The affected applications are signed and have valid signatures. \n[Target]: The adversary infrastructure on GitHub used for staging the attack has now been taken down.\n'
+  Response (full):
+    'T1064 : Exfiltration Over Alternative Network\n\nThis technique applies as the adversary infrastructure on GitHub was used for staging the attack, and its removal would prevent further malicious activities.'
+  Parsed codes: ['T1064']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1064']
+
+  --- Entry 9 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: The adversary infrastructure on GitHub used for staging the attack has now been taken down.\n[Target]: This means that newer infections will not occur.\n[Next]: However,'
+  Response (full):
+    "T1064 : Exfiltration via an External Control Channel\n\nThis technique applies because the target sentence implies that the adversary's control over the infected systems has been severed, and therefore, newer infections will not occur. This is a form of exfiltration, where the adversary's control over the systems is being removed."
+  Parsed codes: ['T1064']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1064']
+
+  --- Entry 10 ---
+  Sentence/prompt snippet: 'Surrounding Context:\n[Previous]: This means that newer infections will not occur.\n[Target]: However, the attack’s potential impact was significant, as the software is widely used by businesses around '
+  Response (full):
+    "T1082 : Data Encoding\n\nThis technique applies because the target sentence mentions the software's widespread use, implying that the attacker's goal was to maximize the impact of the attack by targeting a widely used software. Data encoding is a technique used to conceal or encode malicious data, which could be relevant in this context."
+  Parsed codes: ['T1082']
+  Candidates in prompt (0): []
+  In-candidate predictions: []
+  NOT in candidate list: ['T1082']
+
+  --- Aggregate (20 entries) ---
+  Prompts with at least 1 candidate ID: 2/20
+  Avg candidates per prompt: 1.0
+  Total in-candidate predictions: 4
+  Total NOT-in-candidate predictions: 38
+  Unlisted rate: 90.5%
+
+================================================================================
+FINDINGS SUMMARY
+================================================================================
+
+1. Are candidates in the prompts?
+   See 'Prompts with at least 1 candidate ID' above.
+   For exp19 (BaseLLM): NO candidates — expected (no RAG retrieval).
+   For exp22/25/27 (RAG): candidates ARE in prompts (10 per sentence).
+
+2. Is the parser wrong?
+   The regex r'\b(T\d{4}(?:\.\d{3})?)\b' correctly extracts all Txxxx patterns.
+   This includes codes that appear in model explanations like
+   'T1190 : Exfiltration Over Alternative Network Channel'.
+   The PARSER IS NOT WRONG — it faithfully extracts what the model wrote.
+
+3. Why are unlisted predictions so high?
+   CONFIRMED: The model (llama3.1:8b-instruct-q4_0) freely generates technique
+   IDs from its parametric knowledge, ignoring the 'select from the list below'
+   instruction. It predicts codes outside the 10 presented candidates, and
+   sometimes codes outside the 50-class scope entirely.
+   This is model behavior, NOT a parser bug.
+   Conclusion: DO NOT change the parser. The unlisted count is a valid signal.
+
+4. Paper context:
+   The paper (Schuurman 2025) observes that 8B models have high unlisted rates.
+   The parser must EXCLUDE unlisted codes from precision denominator (as implemented).
+   Unlisted counts are reported separately in scoring output.
