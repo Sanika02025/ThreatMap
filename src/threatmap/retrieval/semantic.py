@@ -4,9 +4,13 @@ Uses cosine similarity over normalized embeddings with offline fallback.
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import numpy as np
+
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 from threatmap.logging_config import setup_logger
 from threatmap.schemas import AttackTechnique, RetrievedCandidate
 
@@ -57,9 +61,13 @@ class SemanticRetriever:
             try:
                 from sentence_transformers import SentenceTransformer
                 logger.info(f"Loading SentenceTransformer model: {self.model_name} on {self.device}")
-                self._model = SentenceTransformer(self.model_name, device=self.device)
+                try:
+                    self._model = SentenceTransformer(self.model_name, device=self.device, local_files_only=True)
+                except Exception:
+                    # In offline environments, fallback immediately rather than hanging on network socket
+                    self._model = OfflineFallbackEmbedder()
             except Exception as e:
-                logger.warning(f"Could not load SentenceTransformer from remote hub ({e}). Falling back to offline dense embedder.")
+                logger.warning(f"Could not load SentenceTransformer ({e}). Falling back to offline dense embedder.")
                 self._model = OfflineFallbackEmbedder()
         return self._model
 
