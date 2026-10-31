@@ -35,19 +35,42 @@ def extract_think_block(text: str) -> str:
     return "\n".join(matches).strip()
 
 
+class ReproductionParseResult(tuple):
+    """Tuple subclass (valid, unlisted, detailed) with dict-like key access for backward compatibility."""
+
+    def __new__(cls, valid_preds: List[str], unlisted_preds: List[str], detailed_records: List[Dict]):
+        return super().__new__(cls, (valid_preds, unlisted_preds, detailed_records))
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            mapping = {
+                "in_scope_predictions": self[0],
+                "valid_predictions": self[0],
+                "unlisted_predictions": self[1],
+                "raw_predictions": self[0] + self[1],
+                "detailed_records": self[2],
+            }
+            if key in mapping:
+                return mapping[key]
+            raise KeyError(key)
+        return super().__getitem__(key)
+
+
 def parse_reproduction_response(
     raw_response: Optional[str],
-    valid_50_classes: Set[str],
+    valid_50_classes: Optional[Set[str]] = None,
+    valid_classes: Optional[Set[str]] = None,
     is_deepseek_reasoning: bool = False,
     include_think_in_extraction: bool = False,
-) -> Tuple[List[str], List[str], List[Dict]]:
+) -> ReproductionParseResult:
     """
     Parses technique predictions from raw text response.
     Returns:
-        (valid_predictions, unlisted_predictions, detailed_records)
+        ReproductionParseResult(valid_predictions, unlisted_predictions, detailed_records)
     """
+    target_classes = valid_50_classes if valid_50_classes is not None else (valid_classes or set())
     if not raw_response or raw_response.strip().lower() == "none":
-        return [], [], []
+        return ReproductionParseResult([], [], [])
 
     text_to_parse = raw_response
 
@@ -73,11 +96,11 @@ def parse_reproduction_response(
             continue
         seen.add(tid)
 
-        if tid in valid_50_classes:
+        if tid in target_classes:
             valid_preds.append(tid)
             detailed_records.append({"technique_id": tid, "status": "valid"})
         else:
             unlisted_preds.append(tid)
             detailed_records.append({"technique_id": tid, "status": "unlisted"})
 
-    return valid_preds, unlisted_preds, detailed_records
+    return ReproductionParseResult(valid_preds, unlisted_preds, detailed_records)

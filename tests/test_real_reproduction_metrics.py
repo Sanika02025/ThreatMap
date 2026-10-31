@@ -3,9 +3,15 @@ Deterministic unit tests for RAG-ATT&CK reproduction metrics using STUB LLM and 
 Zero randomness, exact known answers, explicit assertions.
 """
 
+import sys
+from pathlib import Path
 from typing import Dict, List, Optional, Set
 import numpy as np
 import pytest
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from threatmap.classification.reproduction_parser import parse_reproduction_response
 from threatmap.evaluation.metrics import (
@@ -243,3 +249,105 @@ def test_msmarco_reranker_reordering():
     full_reranked = sorted_top3 + baseline_top15[3:]
 
     assert full_reranked == ["T2", "T3", "T1", "T4", "T5"]
+
+
+def test_parse_llm_response_handling():
+    """
+    Tests regex parsing on realistic LLM output variants:
+    - Normal output: 'T1059.001 : PowerShell\nT1082 : System Info'
+    - 'No Mapping' / 'None' -> empty list
+    - Unlisted techniques split out from valid 50
+    """
+    from scripts.score_llm_sample import parse_llm_response
+
+    valid_50 = {"T1059.001", "T1082", "T1078"}
+
+    # Case 1: Standard response
+    text1 = "Based on the sentence:\nT1059.001 : PowerShell\nT9999.001 : Custom Script\nT1082 : System Info Discovery"
+    valid, unlisted = parse_llm_response(text1, valid_50)
+    assert valid == ["T1059.001", "T1082"]
+    assert unlisted == ["T9999.001"]
+
+    # Case 2: 'No Mapping'
+    text2 = "No Mapping"
+    valid2, unlisted2 = parse_llm_response(text2, valid_50)
+    assert valid2 == []
+    assert unlisted2 == []
+
+    # Case 3: 'None.'
+    text3 = "None."
+    valid3, unlisted3 = parse_llm_response(text3, valid_50)
+    assert valid3 == []
+    assert unlisted3 == []
+
+    # Case 4: None input
+    valid4, unlisted4 = parse_llm_response(None, valid_50)
+    assert valid4 == []
+    assert unlisted4 == []
+
+
+def test_scorer_fails_on_missing_cache(monkeypatch):
+    """
+    HARD RULE: Scorer must raise AssertionError if ANY expected cached response is missing.
+    """
+    from scripts.score_llm_sample import evaluate_experiment_from_cache
+
+    sentences = [
+        {"sentence": "Adversary ran cmd.exe.", "labels": ["T1059.003"], "doc_title": "Doc A"},
+    ]
+    techniques = [{"technique_id": "T1059.003", "technique_name": "Command Shell"}]
+    valid_50 = {"T1059.003"}
+
+    # Mock load_cache_file to return empty or missing hash
+    import scripts.score_llm_sample as scorer_mod
+    monkeypatch.setattr(scorer_mod, "load_cache_file", lambda exp_id: {})
+
+    with pytest.raises(AssertionError, match="Cache file for .* is completely empty or missing"):
+        evaluate_experiment_from_cache(
+            exp_num=19,
+            exp_id="exp19_base_llm",
+            sentences_to_eval=sentences,
+            techniques=techniques,
+            valid_50=valid_50,
+            tech_embs=None,
+            query_embs=None,
+            sent_to_labelled_idx={},
+            context_windows=None,
+        )
+
+    # Now mock cache with wrong hash
+    monkeypatch.setattr(scorer_mod, "load_cache_file", lambda exp_id: {"some_other_hash": {"response": "None"}})
+    with pytest.raises(AssertionError, match="Missing cached response for sentence index 0"):
+        evaluate_experiment_from_cache(
+            exp_num=19,
+            exp_id="exp19_base_llm",
+            sentences_to_eval=sentences,
+            techniques=techniques,
+            valid_50=valid_50,
+            tech_embs=None,
+            query_embs=None,
+            sent_to_labelled_idx={},
+            context_windows=None,
+        )
+
+
+def test_score_predictions_macro_supported_classes_only():
+    """
+    Ensures macro F1 is computed ONLY over classes with support > 0 in the sample.
+    """
+    from scripts.score_llm_sample import score_predictions
+
+    valid_50 = {f"T100{i}" for i in range(50)}  # 50 total classes
+    # Only 2 classes have positive support in the gold labels
+    gold = [["T1001"], ["T1002"], []]
+    preds = [["T1001"], ["T1001", "T1002"], []]
+
+    res = score_predictions(preds, gold, valid_50)
+
+    # T1001: gold on 0 (pred on 0, 1) -> TP=1, FP=1, FN=0 -> P=0.5, R=1.0 -> F1=0.6667
+    # T1002: gold on 1 (pred on 1) -> TP=1, FP=0, FN=0 -> P=1.0, R=1.0 -> F1=1.0
+    # Macro F1 should be average of T1001 and T1002 only = (66.67 + 100) / 2 = 83.33%
+    # (If all 50 classes were included, macro F1 would be ~3.33%)
+    assert res["num_supported_classes"] == 2
+    assert round(res["macro_f1"], 2) == 83.33
+

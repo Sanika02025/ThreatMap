@@ -130,8 +130,8 @@ def format_candidates(
 
 
 def build_reproduction_prompt(
-    experiment_type: str,
-    sentence: str,
+    experiment_type: Optional[str] = None,
+    sentence: str = "",
     candidates: Optional[List[Union[RetrievedCandidate, Dict[str, Any]]]] = None,
     prev_sentence: Optional[str] = None,
     next_sentence: Optional[str] = None,
@@ -140,33 +140,38 @@ def build_reproduction_prompt(
     k: int = 10,
     include_description: bool = True,
     desc_mode: str = "first_paragraph",
+    experiment_name: Optional[str] = None,
+    target_techniques: Optional[List[str]] = None,
 ) -> Union[str, List[Dict[str, str]]]:
     """
     Builds the exact prompt or chat message history for the requested paper experiment.
+    Supports both experiment_type and legacy experiment_name keyword arguments.
     """
+    exp_type = experiment_type or experiment_name or "base_llm"
+
     cands_str = format_candidates(
         candidates or [],
         include_description=include_description,
         desc_mode=desc_mode,
     )
 
-    if experiment_type == "base_llm":
+    if exp_type in ("base_llm", "base_llm_8b"):
         return APPENDIX_B_BASE_LLM.format(sentence=sentence)
 
-    elif experiment_type == "base_rag":
+    elif exp_type in ("base_rag", "base_rag_8b"):
         return APPENDIX_C_BASE_RAG.format(
             candidates_formatted=cands_str,
             sentence=sentence,
         )
 
-    elif experiment_type == "optimized_rag":
+    elif exp_type in ("optimized_rag", "optimized_rag_8b"):
         return APPENDIX_D_OPTIMIZED_RAG.format(
             k=k,
             candidates_formatted=cands_str,
             sentence=sentence,
         )
 
-    elif experiment_type == "context_1":
+    elif exp_type in ("context_1", "context_1_sentence_8b"):
         context_parts = []
         if prev_sentence:
             context_parts.append(f"[Previous]: {prev_sentence}")
@@ -181,7 +186,7 @@ def build_reproduction_prompt(
             sentence=sentence,
         )
 
-    elif experiment_type == "context_2":
+    elif exp_type in ("context_2", "context_2_sentences_8b"):
         context_parts = []
         if prev_2:
             context_parts.append(f"[Previous 2]: {prev_2}")
@@ -200,7 +205,7 @@ def build_reproduction_prompt(
             sentence=sentence,
         )
 
-    elif experiment_type == "few_shot":
+    elif exp_type in ("few_shot", "few_shot_70b"):
         # Multi-turn chat message sequence
         system_msg = {
             "role": "system",
@@ -210,7 +215,7 @@ def build_reproduction_prompt(
         messages = [system_msg] + FEW_SHOT_CHAT_EXAMPLES + [{"role": "user", "content": user_prompt}]
         return messages
 
-    elif experiment_type == "reasoning":
+    elif exp_type in ("reasoning", "deepseek_r1_70b"):
         return REASONING_PROMPT.format(
             candidates_formatted=cands_str,
             sentence=sentence,
