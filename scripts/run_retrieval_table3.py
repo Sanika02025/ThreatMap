@@ -58,6 +58,13 @@ PAPER_TARGETS = {
         "r10": 77.06,
         "r20": None,
     },
+    "nomic_summary": {
+        "name": "Nomic Summarized Descriptions",
+        "r1": None,
+        "r5": None,
+        "r10": 83.93,
+        "r20": None,
+    },
     "nomic_chunk_750": {
         "name": "Nomic Chunks 750/80",
         "r1": None,

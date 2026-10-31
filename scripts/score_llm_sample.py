@@ -63,15 +63,31 @@ from scripts.run_llm_sample import (
 
 # ── Paper Table 2 Targets (micro % and macro %) ──────────────────────────────
 # From Schuurman (2025) Table 2:
-# #19 BaseLLM (8B):       micro P=2.95%, R=12.46%, F1=4.77%, macro F1=4.27%
-# #22 BaseRAG (8B, k=10): micro P=11.34%, R=55.08%, F1=18.81%, macro F1=19.47%
-# #25 Optimized RAG (8B): micro P=8.77%, R=63.27%, F1=15.40%, macro F1=16.84%
-# #27 Context 1 sent:     micro P=7.76%, R=54.31%, F1=13.58%, macro F1=15.60%
+# #19 BaseLLM 8B:       2.95/12.46/4.77 | 4.30/14.07/4.27
+# #22 BaseRAG 8B:       11.34/55.08/18.81 | 13.56/58.69/19.47
+# #25 Optimized k=10:   8.77/63.27/15.40 | 10.65/65.98/16.84
+# #27 Context 1 sent:   7.76/54.31/13.58 | 10.21/57.59/15.60
 PAPER_TARGETS = {
-    19: {"micro_p": 2.95, "micro_r": 12.46, "micro_f1": 4.77, "macro_f1": 4.27, "name": "BaseLLM 8B (#19)"},
-    22: {"micro_p": 11.34, "micro_r": 55.08, "micro_f1": 18.81, "macro_f1": 19.47, "name": "BaseRAG 8B (#22)"},
-    25: {"micro_p": 8.77, "micro_r": 63.27, "micro_f1": 15.40, "macro_f1": 16.84, "name": "Optimized RAG 8B (#25)"},
-    27: {"micro_p": 7.76, "micro_r": 54.31, "micro_f1": 13.58, "macro_f1": 15.60, "name": "Context 1-sent (#27)"},
+    19: {
+        "name": "BaseLLM 8B (#19)",
+        "micro_p": 2.95, "micro_r": 12.46, "micro_f1": 4.77,
+        "macro_p": 4.30, "macro_r": 14.07, "macro_f1": 4.27,
+    },
+    22: {
+        "name": "BaseRAG 8B (#22)",
+        "micro_p": 11.34, "micro_r": 55.08, "micro_f1": 18.81,
+        "macro_p": 13.56, "macro_r": 58.69, "macro_f1": 19.47,
+    },
+    25: {
+        "name": "Optimized RAG 8B (#25)",
+        "micro_p": 8.77, "micro_r": 63.27, "micro_f1": 15.40,
+        "macro_p": 10.65, "macro_r": 65.98, "macro_f1": 16.84,
+    },
+    27: {
+        "name": "Context 1-sent (#27)",
+        "micro_p": 7.76, "micro_r": 54.31, "micro_f1": 13.58,
+        "macro_p": 10.21, "macro_r": 57.59, "macro_f1": 15.60,
+    },
 }
 
 TECHNIQUE_REGEX = re.compile(r"\b(T\d{4}(?:\.\d{3})?)\b", re.IGNORECASE)

@@ -29,51 +29,89 @@ from threatmap.logging_config import setup_logger
 logger = setup_logger("threatmap.run_reproduction_table2")
 
 # Official paper targets for Table 2 (from RAG-ATT&CK Table 2)
+# Real paper values: micro P/R/F1 | macro P/R/F1
 TABLE_2_TARGETS = {
     "BaseLLM 8B (#19)": {
+        "status": "RUNNABLE",
+        "micro_p": 2.95,
+        "micro_r": 12.46,
+        "micro_f1": 4.77,
+        "macro_p": 4.30,
+        "macro_r": 14.07,
         "macro_f1": 4.27,
-        "micro_f1": 5.40,
         "description": "Zero-context baseline prompt on 8B model (Appendix B)",
     },
     "BaseRAG 8B (#22)": {
+        "status": "RUNNABLE",
+        "micro_p": 11.34,
+        "micro_r": 55.08,
+        "micro_f1": 18.81,
+        "macro_p": 13.56,
+        "macro_r": 58.69,
         "macro_f1": 19.47,
-        "micro_f1": 20.80,
-        "description": "Standard RAG with retrieved technique candidates (Appendix C)",
+        "description": "Standard RAG with retrieved technique candidates (Appendix D)",
+    },
+    "Optimized RAG 8B, k=10 (#25)": {
+        "status": "RUNNABLE",
+        "micro_p": 8.77,
+        "micro_r": 63.27,
+        "micro_f1": 15.40,
+        "macro_p": 10.65,
+        "macro_r": 65.98,
+        "macro_f1": 16.84,
+        "description": "Optimized candidate selection (ATTACK-BERT k=10, Appendix D)",
+    },
+    "Context 1 Sentence 8B (#27)": {
+        "status": "RUNNABLE",
+        "micro_p": 7.76,
+        "micro_r": 54.31,
+        "micro_f1": 13.58,
+        "macro_p": 10.21,
+        "macro_r": 57.59,
+        "macro_f1": 15.60,
+        "description": "Incorporating 1 neighboring sentence before & after (Appendix E & Sec 5-F3)",
     },
     "Full Descriptions 8B (#23)": {
+        "status": "NOT RUN (hardware)",
         "macro_f1": 6.76,
         "micro_f1": 7.90,
         "description": "Full MITRE descriptions causing context dilution/collapse",
     },
-    "Optimized RAG 8B, k=10 (#25)": {
-        "macro_f1": 16.84,
-        "micro_f1": 18.50,
-        "description": "Optimized candidate selection (k=10, higher recall but lower F1)",
-    },
-    "Context 1 Sentence 8B (#27)": {
-        "macro_f1": 15.60,
-        "micro_f1": 17.20,
-        "description": "Incorporating 1 neighboring sentence before & after",
+    "Summarized 8B (#24)": {
+        "status": "NOT RUN (hardware)",
+        "macro_f1": 16.48,
+        "micro_f1": 18.10,
+        "description": "Summarized MITRE technique descriptions",
     },
     "Context 2 Sentences 8B (#26)": {
+        "status": "NOT RUN (hardware)",
         "macro_f1": 14.21,
         "micro_f1": 15.90,
         "description": "Incorporating 2 neighboring sentences before & after",
     },
+    "Few-shot 8B (#28)": {
+        "status": "NOT RUN (hardware)",
+        "macro_f1": 17.50,
+        "micro_f1": 18.80,
+        "description": "3-shot chat prompt with 8B model",
+    },
     "Few-shot 70B (#29)": {
+        "status": "NOT RUN (hardware)",
         "macro_f1": 20.15,
         "micro_f1": 21.30,
         "description": "3-shot chat prompt with 70B model (Appendix F)",
     },
-    "DeepSeek-R1 70B (stripped) (#36)": {
+    "BaseLLM 70B (#30)": {
+        "status": "NOT RUN (hardware)",
+        "macro_f1": 6.89,
+        "micro_f1": 7.20,
+        "description": "Zero-context baseline prompt with 70B model",
+    },
+    "DeepSeek-R1 70B (#36)": {
+        "status": "NOT RUN (hardware)",
         "macro_f1": 23.93,
         "micro_f1": 21.70,
         "description": "Reasoning model with <think> tags stripped from extraction",
-    },
-    "DeepSeek-R1 70B (with think)": {
-        "macro_f1": 24.50,
-        "micro_f1": 22.10,
-        "description": "Reasoning model extracting T-codes from reasoning text too",
     },
 }
 
