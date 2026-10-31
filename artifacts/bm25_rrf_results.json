@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "label": "EXTENSION \u2014 not in paper (Schuurman 2025)",
+    "num_sentences": 4070,
+    "total_true_labels": 5143,
+    "paper_nomic_r10": 80.28,
+    "bm25_tokenizer": "simple_tokenize (re.findall r'[a-z0-9]+', lowercase)",
+    "rrf_k": 60,
+    "nomic_embeddings": "nomic_queries_with_prefixes.npy + nomic_tech_full_with_prefixes.npy",
+    "nomic_prefix": "search_query: (sentences), search_document: (tech descriptions)"
+  },
+  "results": {
+    "nomic_with_prefixes": {
+      "recall@1": 35.82,
+      "hits@1": 1842,
+      "recall@5": 68.6,
+      "hits@5": 3528,
+      "recall@10": 80.52,
+      "hits@10": 4141,
+      "recall@20": 90.43,
+      "hits@20": 4651
+    },
+    "bm25_alone": {
+      "recall@1": 23.2,
+      "hits@1": 1193,
+      "recall@5": 49.83,
+      "hits@5": 2563,
+      "recall@10": 64.38,
+      "hits@10": 3311,
+      "recall@20": 80.07,
+      "hits@20": 4118
+    },
+    "bm25_nomic_rrf_k60": {
+      "recall@1": 32.94,
+      "hits@1": 1694,
+      "recall@5": 65.14,
+      "hits@5": 3350,
+      "recall@10": 78.55,
+      "hits@10": 4040,
+      "recall@20": 89.99,
+      "hits@20": 4628
+    }
+  },
+  "timings_seconds": {
+    "bm25_build": 0.04,
+    "nomic_ranking": 0.19,
+    "bm25_scoring": 9.42,
+    "rrf_fusion": 0.17
+  },
+  "paper_target": {
+    "nomic_full_r10": 80.28
+  }
+}

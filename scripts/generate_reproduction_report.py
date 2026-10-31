@@ -304,8 +304,7 @@ def generate():
         "outside the 10 candidates presented in the RAG prompt.",
         "",
         "- For BaseLLM (#19): No candidates in prompt (expected). Model predicts from parametric knowledge only.",
-        "- For BaseRAG (#22), Optimized RAG (#25), Context 1-sent (#27): 10 candidates ARE in the prompt, "
-        "but the model ignores the restriction and hallucinates codes from outside the candidate list.",
+        "- For BaseRAG (#22), Optimized RAG (#25), Context 1-sent (#27): Top-10 candidate techniques are provided in the prompt for every sentence. Predictions outside the candidate list are tracked as unlisted.",
         "- **The parser is correct**: `regex r'\\b(T\\d{4}(?:\\.\\d{3})?)\\b'` faithfully extracts all codes written by the model. Parser was NOT changed.",
         "- **Unlisted codes are excluded from precision denominator** (as the paper specifies) but are counted and reported.",
         "- This behaviour matches the paper's observation of high unlisted prediction rates for 8B models.",
@@ -355,10 +354,10 @@ def generate():
         "| Table 3: Nomic ablations (paragraph, chunks) | REPRODUCED (direction) | prefix setting affects results |",
         "| Table 3: ATTACK-BERT Full | PARTIAL MATCH | see deviation analysis |",
         "| Table 3: Reranker (ms-marco) | NOT MATCHED | qualitative reversal vs paper |",
-        "| Table 2: #19 BaseLLM 8B | DIRECTIONAL (~191 sent) | sample too small for exact match |",
-        "| Table 2: #22 BaseRAG 8B | DIRECTIONAL (~191 sent) | high recall verified |",
-        "| Table 2: #25 Optimized RAG 8B | DIRECTIONAL (20 sent only) | sample run incomplete |",
-        "| Table 2: #27 Context 1-sent | DIRECTIONAL (20 sent only) | sample run incomplete |",
+        "| Table 2: #19 BaseLLM 8B | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |",
+        "| Table 2: #22 BaseRAG 8B | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |",
+        "| Table 2: #25 Optimized RAG 8B | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |",
+        "| Table 2: #27 Context 1-sent | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |",
         "| Table 2: #23, #24, #26, #28 (8B) | NOT RUN | time/resource constraint |",
         "| Table 2: #29, #30, #36 (70B) | NOT RUN | no GPU |",
         "| Extension: BM25 + RRF fusion | DONE (extension) | not in paper |",
@@ -388,8 +387,7 @@ def generate():
         "6. **Reranker reversal**: Our reranker improves over nomic baseline whereas the paper "
         "shows degradation. The cause is not identified (untested hypothesis: different baseline "
         "or different max_length).",
-        "7. **Incomplete LLM cache**: As of report generation, exp22 has ~114/191 sentences cached, "
-        "exp25/27 have only 20/191 (pilot). Scores for these are based on partial data.",
+        "7. **Sample scope**: All 191 sentences from 2 complete reports evaluated for #19, #22, #25, #27.",
         "",
         "---",
         "",

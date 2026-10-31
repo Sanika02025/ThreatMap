@@ -305,7 +305,6 @@ def evaluate_experiment_from_cache(
     valid_50: Set[str],
     tech_embs: Optional[np.ndarray],
     query_embs: Optional[np.ndarray],
-    sent_to_labelled_idx: Dict[str, int],
     context_windows: Optional[Dict[int, Tuple[Optional[str], Optional[str]]]],
 ) -> Dict[str, Any]:
     """
@@ -324,6 +323,7 @@ def evaluate_experiment_from_cache(
     all_unlisted_preds: List[List[str]] = []
     all_gold_50: List[List[str]] = []
     total_unlisted_count = 0
+    empty_candidates_count = 0
 
     for i, row in enumerate(sentences_to_eval):
         sentence = row["sentence"]
@@ -332,13 +332,11 @@ def evaluate_experiment_from_cache(
         if exp_num == 19:
             messages = build_base_llm_messages(sentence, techniques)
         elif exp_num in (22, 25, 27):
-            lab_idx = sent_to_labelled_idx.get(sentence)
-            if lab_idx is None:
-                candidates: List[Dict] = []
-            else:
-                candidates = get_top_k_techniques(
-                    lab_idx, tech_embs, query_embs, techniques, k=RAG_K
-                )
+            assert query_embs is not None and tech_embs is not None, "Missing embeddings for RAG experiment"
+            candidates = get_top_k_techniques(i, tech_embs, query_embs, techniques, k=RAG_K)
+            if len(candidates) == 0:
+                empty_candidates_count += 1
+            assert len(candidates) == RAG_K, f"Expected {RAG_K} candidates, got {len(candidates)}"
 
             if exp_num == 22:
                 messages = build_base_rag_messages(sentence, candidates)
@@ -374,6 +372,7 @@ def evaluate_experiment_from_cache(
 
     metrics = score_predictions(all_preds_50, all_gold_50, valid_50)
     metrics["total_unlisted"] = total_unlisted_count
+    metrics["empty_candidate_prompts"] = empty_candidates_count
     metrics["num_sentences"] = len(sentences_to_eval)
     metrics["num_sentences_with_gold"] = sum(1 for g in all_gold_50 if len(g) > 0)
     metrics["num_in_scope_labels"] = sum(len(g) for g in all_gold_50)
@@ -400,6 +399,8 @@ def print_experiment_block(exp_num: int, name: str, metrics: Dict[str, Any], pap
     print(f"  Sentences with gold label:{n_gold_sent}")
     print(f"  In-scope gold labels:     {n_labels}  (over {n_classes} classes with support)")
     print(f"  Unlisted predictions:     {unlisted}  (excluded from precision)")
+    if exp_num in (22, 25, 27):
+        print(f"  Empty candidate prompts:  {metrics.get('empty_candidate_prompts', 0)}/{n_sent}")
     print()
     print(f"  Counts:   TP={tp}  FP={fp}  FN={fn}")
     print()
@@ -463,16 +464,16 @@ def main():
     attack_bert_query_embs = None
     attack_bert_tech_embs = None
 
-    nomic_q_path = EMB_DIR / "nomic_queries_with_prefixes.npy"
+    nomic_q_path = EMB_DIR / "sample_191_nomic_queries.npy"
     nomic_t_path = EMB_DIR / "nomic_tech_full_with_prefixes.npy"
-    ab_q_path = EMB_DIR / "attack_bert_queries.npy"
+    ab_q_path = EMB_DIR / "sample_191_attack_bert_queries.npy"
     ab_t_path = EMB_DIR / "attack_bert_tech_full.npy"
 
-    if any(e in args.experiments for e in [22, 27]):
+    if 22 in args.experiments:
         nomic_query_embs = np.load(str(nomic_q_path))
         nomic_tech_embs = np.load(str(nomic_t_path))
 
-    if 25 in args.experiments:
+    if any(e in args.experiments for e in [25, 27]):
         attack_bert_query_embs = np.load(str(ab_q_path))
         attack_bert_tech_embs = np.load(str(ab_t_path))
 
@@ -506,10 +507,10 @@ def main():
 
         exp_id = exp_id_map[exp_num]
 
-        if exp_num in (22, 27):
+        if exp_num == 22:
             q_embs = nomic_query_embs
             t_embs = nomic_tech_embs
-        elif exp_num == 25:
+        elif exp_num in (25, 27):
             q_embs = attack_bert_query_embs
             t_embs = attack_bert_tech_embs
         else:
@@ -525,7 +526,6 @@ def main():
                 valid_50=valid_50,
                 tech_embs=t_embs,
                 query_embs=q_embs,
-                sent_to_labelled_idx=sent_to_labelled_idx,
                 context_windows=context_windows,
             )
         except AssertionError as e:

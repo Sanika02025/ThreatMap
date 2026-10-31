@@ -52,3 +52,8 @@ data/processed/*.json
 
 # Environment variables
 .env
+
+!artifacts/retrieval_table3_real_results.json
+!artifacts/llm_sample_scored_report.json
+!artifacts/bm25_rrf_results.json
+!artifacts/table3_ablation_investigation.json

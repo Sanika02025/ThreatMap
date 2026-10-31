@@ -1,0 +1,173 @@
+{
+  "metadata": {
+    "dataset_commit": "f29793d8d665f7f552898696e00065ef24a29a20",
+    "dataset_file": "A:\\nlp\\ThreatMap\\data\\tram2-data\\multi_label.json",
+    "num_sentences_embedded": 4070,
+    "num_true_labels": 5143,
+    "num_classes": 50,
+    "models": {
+      "nomic": "nomic-ai/nomic-embed-text-v1.5",
+      "attack_bert": "basel/ATTACK-BERT",
+      "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    },
+    "timestamp": "2026-10-31T01:20:21Z"
+  },
+  "paper_targets": {
+    "nomic_full": {
+      "name": "Nomic Full Descriptions",
+      "r1": 37.44,
+      "r5": 69.06,
+      "r10": 80.28,
+      "r20": 89.08
+    },
+    "nomic_first_paragraph": {
+      "name": "Nomic First Paragraph",
+      "r1": null,
+      "r5": null,
+      "r10": 77.06,
+      "r20": null
+    },
+    "nomic_chunk_750": {
+      "name": "Nomic Chunks 750/80",
+      "r1": null,
+      "r5": null,
+      "r10": 77.61,
+      "r20": null
+    },
+    "nomic_chunk_375": {
+      "name": "Nomic Chunks 375/50",
+      "r1": null,
+      "r5": null,
+      "r10": 71.7,
+      "r20": null
+    },
+    "attack_bert_full": {
+      "name": "ATTACK-BERT Full",
+      "r1": 42.22,
+      "r5": 75.66,
+      "r10": 86.05,
+      "r20": 94.08
+    },
+    "reranker_top15": {
+      "name": "ms-marco Reranker (Top 15)",
+      "r1": null,
+      "r5": null,
+      "r10": 74.59,
+      "r20": null
+    }
+  },
+  "empirical_results": {
+    "nomic_full_with_prefixes": {
+      "recall@1": 35.82,
+      "hits@1": 1842,
+      "recall@5": 68.6,
+      "hits@5": 3528,
+      "recall@10": 80.52,
+      "hits@10": 4141,
+      "recall@20": 90.43,
+      "hits@20": 4651
+    },
+    "nomic_first_paragraph_with_prefixes": {
+      "recall@1": 28.93,
+      "hits@1": 1488,
+      "recall@5": 54.99,
+      "hits@5": 2828,
+      "recall@10": 69.45,
+      "hits@10": 3572,
+      "recall@20": 85.57,
+      "hits@20": 4401
+    },
+    "nomic_chunk_750_with_prefixes": {
+      "recall@1": 31.85,
+      "hits@1": 1638,
+      "recall@5": 62.36,
+      "hits@5": 3207,
+      "recall@10": 74.92,
+      "hits@10": 3853,
+      "recall@20": 86.89,
+      "hits@20": 4469
+    },
+    "nomic_chunk_375_with_prefixes": {
+      "recall@1": 26.89,
+      "hits@1": 1383,
+      "recall@5": 56.74,
+      "hits@5": 2918,
+      "recall@10": 71.86,
+      "hits@10": 3696,
+      "recall@20": 85.57,
+      "hits@20": 4401
+    },
+    "nomic_full_no_prefixes": {
+      "recall@1": 36.89,
+      "hits@1": 1897,
+      "recall@5": 69.38,
+      "hits@5": 3568,
+      "recall@10": 81.16,
+      "hits@10": 4174,
+      "recall@20": 91.29,
+      "hits@20": 4695
+    },
+    "nomic_first_paragraph_no_prefixes": {
+      "recall@1": 31.64,
+      "hits@1": 1627,
+      "recall@5": 60.18,
+      "hits@5": 3095,
+      "recall@10": 74.08,
+      "hits@10": 3810,
+      "recall@20": 88.22,
+      "hits@20": 4537
+    },
+    "nomic_chunk_750_no_prefixes": {
+      "recall@1": 34.24,
+      "hits@1": 1761,
+      "recall@5": 64.22,
+      "hits@5": 3303,
+      "recall@10": 77.19,
+      "hits@10": 3970,
+      "recall@20": 89.34,
+      "hits@20": 4595
+    },
+    "nomic_chunk_375_no_prefixes": {
+      "recall@1": 31.11,
+      "hits@1": 1600,
+      "recall@5": 60.78,
+      "hits@5": 3126,
+      "recall@10": 74.65,
+      "hits@10": 3839,
+      "recall@20": 87.98,
+      "hits@20": 4525
+    },
+    "attack_bert_full": {
+      "recall@1": 37.86,
+      "hits@1": 1947,
+      "recall@5": 70.31,
+      "hits@5": 3616,
+      "recall@10": 81.84,
+      "hits@10": 4209,
+      "recall@20": 91.83,
+      "hits@20": 4723
+    },
+    "reranker_top15": {
+      "recall@1": 33.91,
+      "hits@1": 1744,
+      "recall@5": 66.95,
+      "hits@5": 3443,
+      "recall@10": 80.75,
+      "hits@10": 4153,
+      "recall@20": 90.43,
+      "hits@20": 4651
+    }
+  },
+  "timings_seconds": {
+    "nomic_full_with_prefixes": 0.1,
+    "nomic_first_paragraph_with_prefixes": 0.1,
+    "nomic_chunk_750_with_prefixes": 0.1,
+    "nomic_chunk_375_with_prefixes": 0.1,
+    "nomic_full_no_prefixes": 0.08,
+    "nomic_first_paragraph_no_prefixes": 0.11,
+    "nomic_chunk_750_no_prefixes": 0.13,
+    "nomic_chunk_375_no_prefixes": 0.12,
+    "attack_bert_full": 0.71,
+    "reranker_top15": 0.4
+  }
+}

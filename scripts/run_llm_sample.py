@@ -186,15 +186,15 @@ def cosine_similarity_matrix(query_embs: np.ndarray, tech_embs: np.ndarray) -> n
 
 
 def get_top_k_techniques(
-    sentence_idx_in_labelled: int,
+    sample_idx: int,
     tech_embs: np.ndarray,
     query_embs: np.ndarray,
     techniques: List[Dict],
     k: int = 10,
 ) -> List[Dict]:
-    """Return top-k technique dicts by cosine similarity."""
+    """Return top-k technique dicts by cosine similarity for sample sentence at sample_idx."""
     sims = cosine_similarity_matrix(
-        query_embs[sentence_idx_in_labelled : sentence_idx_in_labelled + 1],
+        query_embs[sample_idx : sample_idx + 1],
         tech_embs,
     )[0]
     top_indices = np.argsort(sims)[::-1][:k]
@@ -253,45 +253,52 @@ def build_base_rag_messages(
     sentence: str, candidates: List[Dict]
 ) -> List[Dict[str, str]]:
     """
-    Experiment #22 — BaseRAG (Appendix D, nomic k=10).
+    Experiment #22 — BaseRAG (Appendix D.1, nomic k=10).
+    System message with verbatim Appendix D.1 guidelines + user message with sentence.
     """
     cands_str = _format_rag_candidates(candidates)
-    content = (
-        "You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\n"
-        "Given a sentence from a Cyber Threat Intelligence (CTI) report and "
-        "candidate MITRE ATT&CK techniques, identify which technique(s) apply.\n\n"
-        "Candidate Techniques:\n"
+    system_content = (
+        "Task Instructions:\n"
+        "Label the sentences provided by the user with a corresponding MITRE ATT&CK Technique. "
+        'If no applicable technique exists, please respond with the string "No Mapping."\n\n'
+        "Guidelines:\n"
+        "- You may assign multiple MITRE ATT&CK techniques to a sentence if relevant.\n"
+        "- Limit your mappings to the following MITRE ATT&CK techniques:\n"
         f"{cands_str}\n\n"
-        "Provide your answer as a list of technique identifiers and names in the format:\n"
-        "Txxxx : Name\n"
-        "If no techniques apply, output 'No Mapping'.\n\n"
-        f"Sentence: {sentence}"
+        "Now create a list of applicable MITRE ATT&CK techniques to the sentence inputted by the user.\n\n"
+        "Output Format:\n"
+        'Your response should be formatted as follows: "Txxxx : Name"'
     )
-    return [{"role": "user", "content": content}]
+    return [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": sentence},
+    ]
 
 
 def build_optimized_rag_messages(
     sentence: str, candidates: List[Dict]
 ) -> List[Dict[str, str]]:
     """
-    Experiment #25 — Optimized RAG (ATTACK-BERT k=10, Appendix D variant).
+    Experiment #25 — Optimized RAG (Appendix D.1, ATTACK-BERT k=10).
+    System message with verbatim Appendix D.1 guidelines + user message with sentence.
     """
     cands_str = _format_rag_candidates(candidates)
-    content = (
-        "You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping.\n\n"
-        "Given a sentence from a Cyber Threat Intelligence (CTI) report and the "
-        f"top-{RAG_K} candidate MITRE ATT&CK techniques, "
-        "identify which technique(s) are described in the sentence.\n\n"
-        "Candidate Techniques:\n"
+    system_content = (
+        "Task Instructions:\n"
+        "Label the sentences provided by the user with a corresponding MITRE ATT&CK Technique. "
+        'If no applicable technique exists, please respond with the string "No Mapping."\n\n'
+        "Guidelines:\n"
+        "- You may assign multiple MITRE ATT&CK techniques to a sentence if relevant.\n"
+        "- Limit your mappings to the following MITRE ATT&CK techniques:\n"
         f"{cands_str}\n\n"
-        "Rules:\n"
-        "- Select only technique(s) that are directly evidenced in the sentence.\n"
-        "- Provide your answer as a list of technique identifiers and names in the format:\n"
-        "  Txxxx : Name\n"
-        "- If no techniques apply, output 'No Mapping'.\n\n"
-        f"Sentence: {sentence}"
+        "Now create a list of applicable MITRE ATT&CK techniques to the sentence inputted by the user.\n\n"
+        "Output Format:\n"
+        'Your response should be formatted as follows: "Txxxx : Name"'
     )
-    return [{"role": "user", "content": content}]
+    return [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": sentence},
+    ]
 
 
 def build_context1_messages(
@@ -301,32 +308,35 @@ def build_context1_messages(
     next_sentence: Optional[str],
 ) -> List[Dict[str, str]]:
     """
-    Experiment #27 — Context 1 sentence (Appendix E + Section 5-F3 user template).
-    System prompt + user message with context window.
+    Experiment #27 — Context 1 sentence (Appendix E.1 system prompt + Section 5-F3 user template).
     """
     cands_str = _format_rag_candidates(candidates)
+    system_content = (
+        "Task Instructions:\n"
+        "Label the main sentence provided by the user with a corresponding MITRE ATT&CK Technique. "
+        "The main sentence is the one that appears between the context sentences. "
+        'If no applicable technique exists, please respond with the string "No Mapping."\n\n'
+        "Guidelines:\n"
+        "- The user will provide a full context that includes text before, the main sentence to be labeled, and text after.\n"
+        "- You may assign multiple MITRE ATT&CK techniques to the main sentence if relevant.\n"
+        "- Limit your mappings to the following MITRE ATT&CK techniques:\n"
+        f"{cands_str}\n\n"
+        "Now create a list of applicable MITRE ATT&CK techniques to the main sentence in the provided context.\n\n"
+        "Output Format:\n"
+        'Your response should be formatted as follows: "Txxxx : Name"'
+    )
 
     context_parts = []
     if prev_sentence:
-        context_parts.append(f"[Previous]: {prev_sentence}")
-    context_parts.append(f"[Target]: {sentence}")
+        context_parts.append(prev_sentence)
+    context_parts.append(sentence)
     if next_sentence:
-        context_parts.append(f"[Next]: {next_sentence}")
-    context_block = "\n".join(context_parts)
+        context_parts.append(next_sentence)
+    context_block = " ".join(context_parts)
 
-    system_content = (
-        "You are a cybersecurity expert specializing in MITRE ATT&CK framework mapping. "
-        "Given a target sentence and its surrounding context from a Cyber Threat Intelligence "
-        "(CTI) report along with candidate MITRE ATT&CK techniques, identify which technique(s) "
-        "apply to the target sentence."
-    )
     user_content = (
-        f"Surrounding Context:\n{context_block}\n\n"
-        f"Candidate Techniques:\n{cands_str}\n\n"
-        "Provide your answer as a list of technique identifiers and names in the format:\n"
-        "Txxxx : Name\n"
-        "If no techniques apply, output 'No Mapping'.\n\n"
-        f"Target Sentence: {sentence}"
+        f'The main sentence is: """ {sentence} """.\n'
+        f'The main sentence is placed in the context: """ {context_block} """. Please label the main sentence.'
     )
     return [
         {"role": "system", "content": system_content},
@@ -360,9 +370,8 @@ def run_experiment(
     exp_num: int,
     sentences: List[Dict],          # sample rows (all sentences incl. unlabelled)
     techniques: List[Dict],
-    tech_embs: Optional[np.ndarray],   # for RAG experiments
-    query_embs: Optional[np.ndarray],  # pre-computed per labelled sentence
-    sent_to_labelled_idx: Dict[str, int],
+    tech_embs: Optional[np.ndarray],   # for RAG experiments (50, 768)
+    query_embs: Optional[np.ndarray],  # sample query embeddings (191, 768)
     context_windows: Optional[Dict[int, Tuple[Optional[str], Optional[str]]]],
     pilot_only: bool = False,
     verbose: bool = True,
@@ -380,6 +389,16 @@ def run_experiment(
     rows_to_run = sentences[:20] if pilot_only else sentences
     results = []
 
+    # Verify candidates
+    if exp_num in (22, 25, 27):
+        assert query_embs is not None and tech_embs is not None, "Missing embeddings for RAG experiment"
+        empty_count = sum(
+            1 for idx in range(len(rows_to_run))
+            if len(get_top_k_techniques(idx, tech_embs, query_embs, techniques, k=RAG_K)) == 0
+        )
+        print(f"  Empty candidate lists: {empty_count}/{len(rows_to_run)}")
+        assert empty_count == 0, f"Found {empty_count} empty candidate lists!"
+
     for i, row in enumerate(rows_to_run):
         sentence = row["sentence"]
         doc_title = row["doc_title"]
@@ -389,15 +408,9 @@ def run_experiment(
             messages = build_base_llm_messages(sentence, techniques)
 
         elif exp_num in (22, 25, 27):
-            # Need embeddings for retrieval
-            lab_idx = sent_to_labelled_idx.get(sentence)
-            if lab_idx is None:
-                # Unlabelled sentence — no embedding. Use empty candidates.
-                candidates: List[Dict] = []
-            else:
-                candidates = get_top_k_techniques(
-                    lab_idx, tech_embs, query_embs, techniques, k=RAG_K
-                )
+            assert query_embs is not None and tech_embs is not None
+            candidates = get_top_k_techniques(i, tech_embs, query_embs, techniques, k=RAG_K)
+            assert len(candidates) == RAG_K, f"Expected {RAG_K} candidates, got {len(candidates)}"
 
             if exp_num == 22:
                 messages = build_base_rag_messages(sentence, candidates)
@@ -458,9 +471,6 @@ def main():
     techniques, classes50 = load_kb()
     print(f"  {len(techniques)} techniques, {len(classes50)} class IDs")
 
-    print("\nBuilding sentence->labelled-index map (for retrieval)...")
-    sent_to_labelled_idx = build_sentence_index(data)
-
     print("Building context windows for sample...")
     context_windows = build_context_windows(sample)
 
@@ -471,23 +481,24 @@ def main():
     attack_bert_query_embs = None
     attack_bert_tech_embs = None
 
-    nomic_q_path = EMB_DIR / "nomic_queries_with_prefixes.npy"
+    nomic_q_path = EMB_DIR / "sample_191_nomic_queries.npy"
     nomic_t_path = EMB_DIR / "nomic_tech_full_with_prefixes.npy"
-    ab_q_path = EMB_DIR / "attack_bert_queries.npy"
+    ab_q_path = EMB_DIR / "sample_191_attack_bert_queries.npy"
     ab_t_path = EMB_DIR / "attack_bert_tech_full.npy"
 
-    needs_nomic = any(e in args.experiments for e in [22, 27])
-    needs_ab = 25 in args.experiments
+    needs_nomic = 22 in args.experiments
+    needs_ab = any(e in args.experiments for e in [25, 27])
 
     if needs_nomic:
         if nomic_q_path.exists() and nomic_t_path.exists():
             nomic_query_embs = np.load(str(nomic_q_path))
             nomic_tech_embs = np.load(str(nomic_t_path))
             print(f"  Nomic: query={nomic_query_embs.shape}, tech={nomic_tech_embs.shape}")
+            assert nomic_query_embs.shape[0] == len(sample), f"Nomic query shape mismatch: {nomic_query_embs.shape[0]} vs {len(sample)}"
         else:
             raise FileNotFoundError(
-                f"Nomic embeddings missing. Run scripts/run_retrieval_table3.py first.\n"
-                f"Expected: {nomic_q_path}"
+                f"Nomic embeddings missing. Run scripts/run_retrieval_table3.py / cache_sample_queries first.\n"
+                f"Expected: {nomic_q_path} and {nomic_t_path}"
             )
 
     if needs_ab:
@@ -495,10 +506,11 @@ def main():
             attack_bert_query_embs = np.load(str(ab_q_path))
             attack_bert_tech_embs = np.load(str(ab_t_path))
             print(f"  ATTACK-BERT: query={attack_bert_query_embs.shape}, tech={attack_bert_tech_embs.shape}")
+            assert attack_bert_query_embs.shape[0] == len(sample), f"ATTACK-BERT query shape mismatch: {attack_bert_query_embs.shape[0]} vs {len(sample)}"
         else:
             raise FileNotFoundError(
-                f"ATTACK-BERT embeddings missing. Run scripts/run_retrieval_table3.py first.\n"
-                f"Expected: {ab_q_path}"
+                f"ATTACK-BERT embeddings missing. Run scripts/run_retrieval_table3.py / cache_sample_queries first.\n"
+                f"Expected: {ab_q_path} and {ab_t_path}"
             )
 
     # Verify Ollama is reachable (fail fast before spending time on prompts)
@@ -532,11 +544,11 @@ def main():
 
         exp_id = exp_id_map[exp_num]
 
-        # Select embeddings
-        if exp_num in (22, 27):
+        # Select embeddings: #22 uses Nomic; #25 and #27 use ATTACK-BERT
+        if exp_num == 22:
             q_embs = nomic_query_embs
             t_embs = nomic_tech_embs
-        elif exp_num == 25:
+        elif exp_num in (25, 27):
             q_embs = attack_bert_query_embs
             t_embs = attack_bert_tech_embs
         else:
@@ -550,7 +562,6 @@ def main():
             techniques=techniques,
             tech_embs=t_embs,
             query_embs=q_embs,
-            sent_to_labelled_idx=sent_to_labelled_idx,
             context_windows=context_windows,
             pilot_only=pilot_only,
             verbose=(args.mode == "pilot"),

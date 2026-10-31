@@ -1,0 +1,553 @@
+{
+  "metadata": {
+    "mode": "sample",
+    "num_sentences": 191,
+    "reports": [
+      "3CXDesktopApp Backdoored in a Suspected Lazarus Campaign  ",
+      "AA21076A TrickBot Malware"
+    ],
+    "experiments": [
+      19,
+      22
+    ],
+    "bootstrap_n": 1000,
+    "bootstrap_seed": 42,
+    "disclaimer": "~191-sentence sample from 2 reports; NOT the paper's 19,178-sentence evaluation. Compare direction only."
+  },
+  "experiments": {
+    "exp_19": {
+      "name": "BaseLLM 8B (#19)",
+      "exp_id": "exp19_base_llm",
+      "metrics": {
+        "total_tp": 37,
+        "total_fp": 457,
+        "total_fn": 17,
+        "total_pred": 494,
+        "total_gold": 54,
+        "micro_p": 7.489878542510121,
+        "micro_r": 68.51851851851852,
+        "micro_f1": 13.503649635036496,
+        "micro_f1_ci_lo": 10.104168628558872,
+        "micro_f1_ci_hi": 17.40779391006251,
+        "macro_p": 25.120253136557483,
+        "macro_r": 80.1656314699793,
+        "macro_f1": 32.11828284564804,
+        "num_supported_classes": 23,
+        "supported_classes": [
+          "T1140",
+          "T1106",
+          "T1112",
+          "T1566.001",
+          "T1204.002",
+          "T1027",
+          "T1105",
+          "T1543.003",
+          "T1574.002",
+          "T1033",
+          "T1082",
+          "T1053.005",
+          "T1552.001",
+          "T1071.001",
+          "T1562.001",
+          "T1573.001",
+          "T1016",
+          "T1041",
+          "T1005",
+          "T1570",
+          "T1055",
+          "T1083",
+          "T1012"
+        ],
+        "class_details": {
+          "T1140": {
+            "support": 6,
+            "tp": 3,
+            "fp": 8,
+            "fn": 3,
+            "precision": 27.27272727272727,
+            "recall": 50.0,
+            "f1": 35.29411764705882
+          },
+          "T1106": {
+            "support": 5,
+            "tp": 1,
+            "fp": 1,
+            "fn": 4,
+            "precision": 50.0,
+            "recall": 20.0,
+            "f1": 28.571428571428577
+          },
+          "T1112": {
+            "support": 1,
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 100.0,
+            "recall": 100.0,
+            "f1": 100.0
+          },
+          "T1566.001": {
+            "support": 2,
+            "tp": 2,
+            "fp": 11,
+            "fn": 0,
+            "precision": 15.384615384615385,
+            "recall": 100.0,
+            "f1": 26.66666666666667
+          },
+          "T1204.002": {
+            "support": 3,
+            "tp": 1,
+            "fp": 6,
+            "fn": 2,
+            "precision": 14.285714285714285,
+            "recall": 33.33333333333333,
+            "f1": 20.0
+          },
+          "T1027": {
+            "support": 7,
+            "tp": 4,
+            "fp": 2,
+            "fn": 3,
+            "precision": 66.66666666666666,
+            "recall": 57.14285714285714,
+            "f1": 61.53846153846153
+          },
+          "T1105": {
+            "support": 1,
+            "tp": 1,
+            "fp": 2,
+            "fn": 0,
+            "precision": 33.33333333333333,
+            "recall": 100.0,
+            "f1": 50.0
+          },
+          "T1543.003": {
+            "support": 2,
+            "tp": 2,
+            "fp": 7,
+            "fn": 0,
+            "precision": 22.22222222222222,
+            "recall": 100.0,
+            "f1": 36.36363636363636
+          },
+          "T1574.002": {
+            "support": 1,
+            "tp": 1,
+            "fp": 8,
+            "fn": 0,
+            "precision": 11.11111111111111,
+            "recall": 100.0,
+            "f1": 20.0
+          },
+          "T1033": {
+            "support": 1,
+            "tp": 1,
+            "fp": 13,
+            "fn": 0,
+            "precision": 7.142857142857142,
+            "recall": 100.0,
+            "f1": 13.333333333333334
+          },
+          "T1082": {
+            "support": 2,
+            "tp": 2,
+            "fp": 31,
+            "fn": 0,
+            "precision": 6.0606060606060606,
+            "recall": 100.0,
+            "f1": 11.428571428571429
+          },
+          "T1053.005": {
+            "support": 2,
+            "tp": 2,
+            "fp": 34,
+            "fn": 0,
+            "precision": 5.555555555555555,
+            "recall": 100.0,
+            "f1": 10.526315789473683
+          },
+          "T1552.001": {
+            "support": 3,
+            "tp": 1,
+            "fp": 25,
+            "fn": 2,
+            "precision": 3.8461538461538463,
+            "recall": 33.33333333333333,
+            "f1": 6.896551724137931
+          },
+          "T1071.001": {
+            "support": 2,
+            "tp": 2,
+            "fp": 4,
+            "fn": 0,
+            "precision": 33.33333333333333,
+            "recall": 100.0,
+            "f1": 50.0
+          },
+          "T1562.001": {
+            "support": 1,
+            "tp": 1,
+            "fp": 2,
+            "fn": 0,
+            "precision": 33.33333333333333,
+            "recall": 100.0,
+            "f1": 50.0
+          },
+          "T1573.001": {
+            "support": 2,
+            "tp": 1,
+            "fp": 3,
+            "fn": 1,
+            "precision": 25.0,
+            "recall": 50.0,
+            "f1": 33.33333333333333
+          },
+          "T1016": {
+            "support": 1,
+            "tp": 1,
+            "fp": 1,
+            "fn": 0,
+            "precision": 50.0,
+            "recall": 100.0,
+            "f1": 66.66666666666666
+          },
+          "T1041": {
+            "support": 2,
+            "tp": 2,
+            "fp": 6,
+            "fn": 0,
+            "precision": 25.0,
+            "recall": 100.0,
+            "f1": 40.0
+          },
+          "T1005": {
+            "support": 2,
+            "tp": 1,
+            "fp": 4,
+            "fn": 1,
+            "precision": 20.0,
+            "recall": 50.0,
+            "f1": 28.571428571428577
+          },
+          "T1570": {
+            "support": 2,
+            "tp": 1,
+            "fp": 7,
+            "fn": 1,
+            "precision": 12.5,
+            "recall": 50.0,
+            "f1": 20.0
+          },
+          "T1055": {
+            "support": 1,
+            "tp": 1,
+            "fp": 31,
+            "fn": 0,
+            "precision": 3.125,
+            "recall": 100.0,
+            "f1": 6.0606060606060606
+          },
+          "T1083": {
+            "support": 4,
+            "tp": 4,
+            "fp": 41,
+            "fn": 0,
+            "precision": 8.88888888888889,
+            "recall": 100.0,
+            "f1": 16.3265306122449
+          },
+          "T1012": {
+            "support": 1,
+            "tp": 1,
+            "fp": 26,
+            "fn": 0,
+            "precision": 3.7037037037037033,
+            "recall": 100.0,
+            "f1": 7.142857142857142
+          }
+        },
+        "total_unlisted": 31,
+        "num_sentences": 191,
+        "num_sentences_with_gold": 49,
+        "num_in_scope_labels": 54
+      },
+      "paper_target": {
+        "name": "BaseLLM 8B (#19)",
+        "micro_p": 2.95,
+        "micro_r": 12.46,
+        "micro_f1": 4.77,
+        "macro_p": 4.3,
+        "macro_r": 14.07,
+        "macro_f1": 4.27
+      }
+    },
+    "exp_22": {
+      "name": "BaseRAG 8B (#22)",
+      "exp_id": "exp22_base_rag",
+      "metrics": {
+        "total_tp": 42,
+        "total_fp": 108,
+        "total_fn": 12,
+        "total_pred": 150,
+        "total_gold": 54,
+        "micro_p": 28.000000000000004,
+        "micro_r": 77.77777777777779,
+        "micro_f1": 41.176470588235304,
+        "micro_f1_ci_lo": 33.96031498518634,
+        "micro_f1_ci_hi": 48.37491190979562,
+        "macro_p": 45.150634389764825,
+        "macro_r": 81.40786749482402,
+        "macro_f1": 52.88529294250118,
+        "num_supported_classes": 23,
+        "supported_classes": [
+          "T1140",
+          "T1106",
+          "T1112",
+          "T1566.001",
+          "T1204.002",
+          "T1027",
+          "T1105",
+          "T1543.003",
+          "T1574.002",
+          "T1033",
+          "T1082",
+          "T1053.005",
+          "T1552.001",
+          "T1071.001",
+          "T1562.001",
+          "T1573.001",
+          "T1016",
+          "T1041",
+          "T1005",
+          "T1570",
+          "T1055",
+          "T1083",
+          "T1012"
+        ],
+        "class_details": {
+          "T1140": {
+            "support": 6,
+            "tp": 5,
+            "fp": 8,
+            "fn": 1,
+            "precision": 38.46153846153847,
+            "recall": 83.33333333333334,
+            "f1": 52.63157894736842
+          },
+          "T1106": {
+            "support": 5,
+            "tp": 1,
+            "fp": 1,
+            "fn": 4,
+            "precision": 50.0,
+            "recall": 20.0,
+            "f1": 28.571428571428577
+          },
+          "T1112": {
+            "support": 1,
+            "tp": 1,
+            "fp": 2,
+            "fn": 0,
+            "precision": 33.33333333333333,
+            "recall": 100.0,
+            "f1": 50.0
+          },
+          "T1566.001": {
+            "support": 2,
+            "tp": 2,
+            "fp": 1,
+            "fn": 0,
+            "precision": 66.66666666666666,
+            "recall": 100.0,
+            "f1": 80.0
+          },
+          "T1204.002": {
+            "support": 3,
+            "tp": 2,
+            "fp": 5,
+            "fn": 1,
+            "precision": 28.57142857142857,
+            "recall": 66.66666666666666,
+            "f1": 40.0
+          },
+          "T1027": {
+            "support": 7,
+            "tp": 6,
+            "fp": 7,
+            "fn": 1,
+            "precision": 46.15384615384615,
+            "recall": 85.71428571428571,
+            "f1": 60.0
+          },
+          "T1105": {
+            "support": 1,
+            "tp": 1,
+            "fp": 2,
+            "fn": 0,
+            "precision": 33.33333333333333,
+            "recall": 100.0,
+            "f1": 50.0
+          },
+          "T1543.003": {
+            "support": 2,
+            "tp": 2,
+            "fp": 1,
+            "fn": 0,
+            "precision": 66.66666666666666,
+            "recall": 100.0,
+            "f1": 80.0
+          },
+          "T1574.002": {
+            "support": 1,
+            "tp": 1,
+            "fp": 7,
+            "fn": 0,
+            "precision": 12.5,
+            "recall": 100.0,
+            "f1": 22.22222222222222
+          },
+          "T1033": {
+            "support": 1,
+            "tp": 1,
+            "fp": 2,
+            "fn": 0,
+            "precision": 33.33333333333333,
+            "recall": 100.0,
+            "f1": 50.0
+          },
+          "T1082": {
+            "support": 2,
+            "tp": 2,
+            "fp": 6,
+            "fn": 0,
+            "precision": 25.0,
+            "recall": 100.0,
+            "f1": 40.0
+          },
+          "T1053.005": {
+            "support": 2,
+            "tp": 2,
+            "fp": 3,
+            "fn": 0,
+            "precision": 40.0,
+            "recall": 100.0,
+            "f1": 57.14285714285715
+          },
+          "T1552.001": {
+            "support": 3,
+            "tp": 2,
+            "fp": 0,
+            "fn": 1,
+            "precision": 100.0,
+            "recall": 66.66666666666666,
+            "f1": 80.0
+          },
+          "T1071.001": {
+            "support": 2,
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "precision": 100.0,
+            "recall": 100.0,
+            "f1": 100.0
+          },
+          "T1562.001": {
+            "support": 1,
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 100.0,
+            "recall": 100.0,
+            "f1": 100.0
+          },
+          "T1573.001": {
+            "support": 2,
+            "tp": 1,
+            "fp": 5,
+            "fn": 1,
+            "precision": 16.666666666666664,
+            "recall": 50.0,
+            "f1": 25.0
+          },
+          "T1016": {
+            "support": 1,
+            "tp": 1,
+            "fp": 8,
+            "fn": 0,
+            "precision": 11.11111111111111,
+            "recall": 100.0,
+            "f1": 20.0
+          },
+          "T1041": {
+            "support": 2,
+            "tp": 1,
+            "fp": 1,
+            "fn": 1,
+            "precision": 50.0,
+            "recall": 50.0,
+            "f1": 50.0
+          },
+          "T1005": {
+            "support": 2,
+            "tp": 1,
+            "fp": 4,
+            "fn": 1,
+            "precision": 20.0,
+            "recall": 50.0,
+            "f1": 28.571428571428577
+          },
+          "T1570": {
+            "support": 2,
+            "tp": 2,
+            "fp": 1,
+            "fn": 0,
+            "precision": 66.66666666666666,
+            "recall": 100.0,
+            "f1": 80.0
+          },
+          "T1055": {
+            "support": 1,
+            "tp": 1,
+            "fp": 4,
+            "fn": 0,
+            "precision": 20.0,
+            "recall": 100.0,
+            "f1": 33.333333333333336
+          },
+          "T1083": {
+            "support": 4,
+            "tp": 4,
+            "fp": 1,
+            "fn": 0,
+            "precision": 80.0,
+            "recall": 100.0,
+            "f1": 88.8888888888889
+          },
+          "T1012": {
+            "support": 1,
+            "tp": 0,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+          }
+        },
+        "total_unlisted": 175,
+        "num_sentences": 191,
+        "num_sentences_with_gold": 49,
+        "num_in_scope_labels": 54
+      },
+      "paper_target": {
+        "name": "BaseRAG 8B (#22)",
+        "micro_p": 11.34,
+        "micro_r": 55.08,
+        "micro_f1": 18.81,
+        "macro_p": 13.56,
+        "macro_r": 58.69,
+        "macro_f1": 19.47
+      }
+    }
+  }
+}
