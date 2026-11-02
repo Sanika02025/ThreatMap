@@ -1,0 +1,43 @@
+{
+  "description": "Retrieval ceiling and error decomposition for #22, #25, #27 on 191-sentence sample.",
+  "sample_sentences": 191,
+  "total_gold_in_scope": 54,
+  "results": {
+    "exp22_base_rag": {
+      "exp_id": "exp22_base_rag",
+      "total_gold_labels": 54,
+      "gold_in_candidates": 48,
+      "candidate_recall_pct": 88.89,
+      "gold_not_in_candidates": 6,
+      "tp": 41,
+      "gold_missed_by_llm": 7,
+      "selection_rate_pct": 85.42,
+      "larger_loss_stage": "LLM selection stage",
+      "label": "#22 BaseRAG 8B"
+    },
+    "exp25_optimized_rag": {
+      "exp_id": "exp25_optimized_rag",
+      "total_gold_labels": 54,
+      "gold_in_candidates": 49,
+      "candidate_recall_pct": 90.74,
+      "gold_not_in_candidates": 5,
+      "tp": 44,
+      "gold_missed_by_llm": 5,
+      "selection_rate_pct": 89.8,
+      "larger_loss_stage": "equal loss",
+      "label": "#25 Optimized RAG 8B"
+    },
+    "exp27_context1": {
+      "exp_id": "exp27_context1",
+      "total_gold_labels": 54,
+      "gold_in_candidates": 49,
+      "candidate_recall_pct": 90.74,
+      "gold_not_in_candidates": 5,
+      "tp": 38,
+      "gold_missed_by_llm": 11,
+      "selection_rate_pct": 77.55,
+      "larger_loss_stage": "LLM selection stage",
+      "label": "#27 Context 1-sent"
+    }
+  }
+}
