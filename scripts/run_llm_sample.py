@@ -93,10 +93,11 @@ def _append_cache(exp_id: str, entry: Dict) -> None:
 
 # ── Ollama call ───────────────────────────────────────────────────────────────
 
-def call_ollama(messages: List[Dict[str, str]]) -> Tuple[str, float]:
+def call_ollama(messages: List[Dict[str, str]], max_retries: int = 3) -> Tuple[str, float]:
     """
     Call Ollama /api/chat. Returns (content, duration_seconds).
     Raises RuntimeError if Ollama is unreachable or returns an error.
+    Retries on timeout.
     """
     payload = {
         "model": MODEL,
@@ -104,23 +105,36 @@ def call_ollama(messages: List[Dict[str, str]]) -> Tuple[str, float]:
         "stream": False,
         "options": OPTIONS,
     }
-    t0 = time.time()
-    try:
-        resp = requests.post(OLLAMA_URL, json=payload, timeout=300)
-    except requests.exceptions.ConnectionError as exc:
-        raise RuntimeError(
-            f"Ollama unreachable at {OLLAMA_URL}. "
-            "Make sure `ollama serve` is running. Error: {exc}"
-        ) from exc
-    duration = time.time() - t0
+    for attempt in range(1, max_retries + 1):
+        t0 = time.time()
+        try:
+            resp = requests.post(OLLAMA_URL, json=payload, timeout=600)
+        except requests.exceptions.ConnectionError as exc:
+            raise RuntimeError(
+                f"Ollama unreachable at {OLLAMA_URL}. "
+                f"Make sure `ollama serve` is running. Error: {exc}"
+            ) from exc
+        except (requests.exceptions.Timeout, requests.exceptions.ReadTimeout) as exc:
+            if attempt < max_retries:
+                print(f"    [Timeout attempt {attempt}/{max_retries}, retrying in 5s...]", flush=True)
+                time.sleep(5)
+                continue
+            raise RuntimeError(f"Ollama call timed out after {max_retries} attempts.") from exc
 
-    if resp.status_code != 200:
-        raise RuntimeError(
-            f"Ollama returned HTTP {resp.status_code}: {resp.text[:300]}"
-        )
-    data = resp.json()
-    content = data.get("message", {}).get("content", "")
-    return content, duration
+        duration = time.time() - t0
+        if resp.status_code != 200:
+            if attempt < max_retries:
+                print(f"    [HTTP {resp.status_code} attempt {attempt}/{max_retries}, retrying in 10s: {resp.text[:100]}]", flush=True)
+                time.sleep(10)
+                continue
+            raise RuntimeError(
+                f"Ollama returned HTTP {resp.status_code}: {resp.text[:300]}"
+            )
+        data = resp.json()
+        content = data.get("message", {}).get("content", "")
+        return content, duration
+
+    raise RuntimeError("Unexpected exit from call_ollama retry loop")
 
 
 def call_ollama_cached(

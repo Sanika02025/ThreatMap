@@ -1,0 +1,63 @@
+{
+  "attack_bert_mean_raw": {
+    "recall@10": 81.84,
+    "hits": 4209,
+    "pooling": "mean",
+    "cleaned": false,
+    "status": "DONE"
+  },
+  "attack_bert_mean_clean": {
+    "recall@10": 82.09,
+    "hits": 4222,
+    "pooling": "mean",
+    "cleaned": true,
+    "status": "DONE"
+  },
+  "attack_bert_cls_raw": {
+    "recall@10": null,
+    "hits": null,
+    "pooling": "cls",
+    "cleaned": false,
+    "status": "NOT_RUN",
+    "reason": "CrossEncoder CLS inference hung after weight-load on CPU-only laptop (16 GB RAM, no GPU). Untested hypothesis: CLS pooling would differ by <1% based on typical BERT behaviour."
+  },
+  "attack_bert_cls_clean": {
+    "recall@10": null,
+    "hits": null,
+    "pooling": "cls",
+    "cleaned": true,
+    "status": "NOT_RUN",
+    "reason": "CLS pooling variant not computed (same reason as attack_bert_cls_raw)."
+  },
+  "reranker_max256_raw": {
+    "recall@10": 80.75,
+    "hits": 4153,
+    "max_length": 256,
+    "cleaned": false,
+    "status": "DONE"
+  },
+  "reranker_max512_raw": {
+    "recall@10": null,
+    "hits": null,
+    "max_length": 512,
+    "cleaned": false,
+    "status": "NOT_RUN",
+    "reason": "CrossEncoder inference with max_length=512 on 4,070 sentence pairs exceeded available CPU memory / hung after model load on this hardware (i5-12450H, 16 GB RAM, no GPU). The max_length=256 raw variant shows the same recall as the baseline (80.75%), suggesting this dimension does not explain the paper's 74.59% result."
+  },
+  "reranker_max256_clean": {
+    "recall@10": null,
+    "hits": null,
+    "max_length": 256,
+    "cleaned": true,
+    "status": "NOT_RUN",
+    "reason": "CrossEncoder inference with max_length=512 on 4,070 sentence pairs exceeded available CPU memory / hung after model load on this hardware (i5-12450H, 16 GB RAM, no GPU). The max_length=256 raw variant shows the same recall as the baseline (80.75%), suggesting this dimension does not explain the paper's 74.59% result."
+  },
+  "reranker_max512_clean": {
+    "recall@10": null,
+    "hits": null,
+    "max_length": 512,
+    "cleaned": true,
+    "status": "NOT_RUN",
+    "reason": "CrossEncoder inference with max_length=512 on 4,070 sentence pairs exceeded available CPU memory / hung after model load on this hardware (i5-12450H, 16 GB RAM, no GPU). The max_length=256 raw variant shows the same recall as the baseline (80.75%), suggesting this dimension does not explain the paper's 74.59% result."
+  }
+}

@@ -176,27 +176,22 @@ def generate():
         d = ab_real - ab_target
         lines.append(f"Delta = {d:+.2f}%. {'Below target.' if d < 0 else 'Above target.'}")
     lines += [
-        "- **Untested hypothesis**: The paper may have applied text cleaning (strip `(Citation: ...)` "
-        "and markdown links) before embedding. This was not tested in our reproduction.",
-        "- **Untested hypothesis**: The paper may have used a different pooling strategy (CLS vs mean). "
-        "Our reproduction uses mean pooling (default for ATTACK-BERT HuggingFace model).",
+        "- **Tested**: Mean pooling with raw descriptions gives R@10 = 81.84% (4,209/5,143).",
+        "- **Tested**: Mean pooling with cleaned descriptions (strip `(Citation: ...)` and markdown links) gives R@10 = 82.09% (4,222/5,143), an improvement of +0.25%, but still 3.96% below the paper's 86.05%.",
+        "- **Untested hypothesis**: The paper may have used CLS pooling or a different truncation/tokenization strategy. CLS was not computed on this hardware due to memory/time constraints.",
         "",
         f"**Reranker (ms-marco)**: Reproduced R@10 = {fmt_pct(rer_real)}, Paper target = {fmt_pct(rer_target)}.",
     ]
     if rer_real and rer_target:
         d2 = rer_real - rer_target
         lines.append(
-            f"Delta = {d2:+.2f}%. Our reranker **improves** over nomic baseline, "
+            f"Delta = {d2:+.2f}%. Our reranker **improves** over nomic baseline (80.75% vs 80.52%), "
             "while the paper shows it **hurts** (74.59% < 80.28%). "
             "This is a qualitative reversal."
         )
     lines += [
-        "- **Untested hypothesis**: The paper may have used max_length=256 for the cross-encoder "
-        "vs 512 in our run, which could change score calibration.",
-        "- **Untested hypothesis**: With a different nomic baseline (no-prefix = 81.16% in our run), "
-        "the reranker still improves over it. Possible explanation: the paper's nomic baseline used "
-        "different prefix settings, yielding a higher Recall@10, which the reranker then hurt.",
-        "- None of these hypotheses have been tested by re-running with modified settings.",
+        "- **Tested**: Testing with max_length=256 and raw descriptions yields R@10 = 80.75% (4,153/5,143), identical to the baseline reranker score. This confirms max_length does not account for the paper's 74.59% degradation.",
+        "- **Untested hypothesis**: The paper's reranker pipeline may have had candidate inputs formatted differently, used a different top-k pool (e.g. k=10 or k=20 rather than 15), or evaluated with a different negative sampling / scoring threshold.",
         "",
     ]
 

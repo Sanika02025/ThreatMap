@@ -305,7 +305,8 @@ def evaluate_experiment_from_cache(
     valid_50: Set[str],
     tech_embs: Optional[np.ndarray],
     query_embs: Optional[np.ndarray],
-    context_windows: Optional[Dict[int, Tuple[Optional[str], Optional[str]]]],
+    context_windows: Optional[Dict[int, Tuple[Optional[str], Optional[str]]]] = None,
+    sent_to_labelled_idx: Optional[Dict[str, int]] = None,
 ) -> Dict[str, Any]:
     """
     Verifies every expected sentence hash is in cache, extracts predictions,

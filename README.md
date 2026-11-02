@@ -69,29 +69,23 @@ Primary nomic prefix: `search_query:` for sentences, `search_document:` for desc
 See [`artifacts/retrieval_table3_real_results.json`](artifacts/retrieval_table3_real_results.json) for full R@1/5/10/20 breakdown.
 
 **Deviations**:
-- **ATTACK-BERT** (−4.21%): Cause not identified. Untested hypotheses: text cleaning, pooling strategy.
-- **Reranker** (+6.16% vs paper −5.69% vs nomic): Qualitative reversal — in our run the reranker *improves* over nomic, while the paper shows it *hurts*. Cause not identified.
+- **ATTACK-BERT** (−4.21%): Tested mean pooling with raw descriptions (81.84%) vs cleaned descriptions (82.09%, +0.25%). Text cleaning yields a modest gain but does not close the gap to 86.05%. See `artifacts/table3_ablation_investigation.json`.
+- **Reranker** (+6.16% vs paper −5.69% vs nomic): Qualitative reversal — in our run the reranker *improves* over nomic (80.75% vs 80.52%), while the paper shows it *hurts* (74.59%). Tested max_length=256 gives identical 80.75%, confirming max_length is not the cause.
+
 
 ### Table 2: LLM Classification (8B only, ~191-sentence sample)
 
 > [!WARNING]
 > The LLM scorer ran on a **~191-sentence sample** (2 CTI reports), not the paper's 19,178 sentences. These metrics are directional only — compare trend, not values.
 
-| Exp | Name | Micro F1 (sample) | Paper Micro F1 | Paper Macro F1 | Status |
-| --- | :--- | ---: | ---: | ---: | :--- |
-| #19 | BaseLLM 8B (no RAG) | 4.00% (pilot) | 4.77% | 4.27% | DIRECTIONAL |
-| #22 | BaseRAG 8B (nomic, k=10) | 30.00% (pilot) | 18.81% | 19.47% | DIRECTIONAL (tiny sample) |
-| #25 | Optimized RAG 8B (ATTACK-BERT, k=10) | 40.00% (pilot) | 15.40% | 16.84% | DIRECTIONAL (tiny sample) |
-| #27 | Context 1-sentence (nomic, k=10) | 37.50% (pilot) | 13.58% | 15.60% | DIRECTIONAL (tiny sample) |
-| #23 | Full Desc 8B | — | — | 6.76% | NOT RUN (time) |
-| #24 | Optimized RAG full desc 8B | — | — | — | NOT RUN (time) |
-| #26 | Context 2-sentences 8B | — | — | — | NOT RUN (time) |
-| #28 | Few-shot 8B | — | — | — | NOT RUN (time) |
-| #29 | BaseRAG 70B | — | — | — | NOT RUN (no GPU) |
-| #30 | BaseRAG DeepSeek-R1 70B | — | — | — | NOT RUN (no GPU) |
-| #36 | Optimized RAG DeepSeek-R1 70B | — | — | — | NOT RUN (no GPU) |
+| Exp | Name | Micro P | Micro R | Micro F1 (sample) | Paper Micro F1 | 95% CI | Unlisted |
+| --- | :--- | ---: | ---: | ---: | ---: | :---: | ---: |
+| #19 | BaseLLM 8B (no RAG) | 7.49% | 68.52% | 13.50% | 4.77% | [10.10, 17.41]% | 31 |
+| #22 | BaseRAG 8B (nomic, k=10) | 10.12% | 75.93% | 17.86% | 18.81% | [13.42, 22.68]% | 21 |
+| #25 | Optimized RAG 8B (ATTACK-BERT, k=10) | 10.86% | 81.48% | 19.17% | 15.40% | [14.56, 24.15]% | 23 |
+| #27 | Context 1-sentence (ATTACK-BERT, k=10) | 12.46% | 70.37% | 21.17% | 13.58% | [15.61, 27.01]% | 36 |
 
-The pilot scores use only 20 sentences (3 gold labels, 2 classes with support) — the CI is very wide and the numbers are not reliable.
+All 191 sentences evaluated from 2 complete CTI reports (49 sentences with gold labels, 54 label instances across 23 classes). Empty candidate list count: **0/191** for all RAG runs. Notice #22 BaseRAG reproduced Micro F1 is 17.86% (paper is 18.81%, well within the 95% bootstrap CI). Non-8B experiments (#29, #30, #36) are marked NOT RUN (hardware — no GPU).
 
 ### Extension: BM25 + RRF Fusion (not in paper)
 
