@@ -1,0 +1,639 @@
+{
+  "description": "Per-class Recall@10 for nomic (with prefixes) and ATTACK-BERT full, computed from cached embeddings over 4,070 labelled sentences. Spearman(support, Recall@10) computed without randomness using rank transform.",
+  "total_label_instances": 5143,
+  "num_labelled_sentences": 4070,
+  "spearman_support_vs_recall10": {
+    "nomic_with_prefixes": -0.0674,
+    "attack_bert": -0.1625
+  },
+  "top5_nomic": [
+    {
+      "technique_id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "recall10": 96.72,
+      "support": 61
+    },
+    {
+      "technique_id": "T1021.001",
+      "name": "Remote Desktop Protocol",
+      "recall10": 95.96,
+      "support": 99
+    },
+    {
+      "technique_id": "T1484.001",
+      "name": "Group Policy Modification",
+      "recall10": 95.83,
+      "support": 24
+    },
+    {
+      "technique_id": "T1574.002",
+      "name": "DLL Side-Loading",
+      "recall10": 94.74,
+      "support": 76
+    },
+    {
+      "technique_id": "T1003.001",
+      "name": "LSASS Memory",
+      "recall10": 94.64,
+      "support": 112
+    }
+  ],
+  "bottom5_nomic": [
+    {
+      "technique_id": "T1041",
+      "name": "Exfiltration Over C2 Channel",
+      "recall10": 38.75,
+      "support": 80
+    },
+    {
+      "technique_id": "T1005",
+      "name": "Data from Local System",
+      "recall10": 47.54,
+      "support": 61
+    },
+    {
+      "technique_id": "T1570",
+      "name": "Lateral Tool Transfer",
+      "recall10": 54.24,
+      "support": 59
+    },
+    {
+      "technique_id": "T1012",
+      "name": "Query Registry",
+      "recall10": 58.33,
+      "support": 24
+    },
+    {
+      "technique_id": "T1072",
+      "name": "Software Deployment Tools",
+      "recall10": 60.0,
+      "support": 10
+    }
+  ],
+  "top5_attack_bert": [
+    {
+      "technique_id": "T1557.001",
+      "name": "LLMNR/NBT-NS Poisoning and SMB Relay",
+      "recall10": 100.0,
+      "support": 7
+    },
+    {
+      "technique_id": "T1564.001",
+      "name": "Hidden Files and Directories",
+      "recall10": 100.0,
+      "support": 16
+    },
+    {
+      "technique_id": "T1140",
+      "name": "Deobfuscate/Decode Files or Information",
+      "recall10": 93.99,
+      "support": 466
+    },
+    {
+      "technique_id": "T1056.001",
+      "name": "Keylogging",
+      "recall10": 93.55,
+      "support": 62
+    },
+    {
+      "technique_id": "T1566.001",
+      "name": "Spearphishing Attachment",
+      "recall10": 93.33,
+      "support": 90
+    }
+  ],
+  "bottom5_attack_bert": [
+    {
+      "technique_id": "T1059.003",
+      "name": "Windows Command Shell",
+      "recall10": 53.35,
+      "support": 358
+    },
+    {
+      "technique_id": "T1106",
+      "name": "Native API",
+      "recall10": 54.11,
+      "support": 207
+    },
+    {
+      "technique_id": "T1072",
+      "name": "Software Deployment Tools",
+      "recall10": 60.0,
+      "support": 10
+    },
+    {
+      "technique_id": "T1036.005",
+      "name": "Match Legitimate Name or Location",
+      "recall10": 63.38,
+      "support": 71
+    },
+    {
+      "technique_id": "T1105",
+      "name": "Ingress Tool Transfer",
+      "recall10": 65.52,
+      "support": 261
+    }
+  ],
+  "per_class": [
+    {
+      "technique_id": "T1027",
+      "name": "Obfuscated Files or Information",
+      "nomic_support": 678,
+      "nomic_hits10": 558,
+      "nomic_recall10": 82.3,
+      "ab_support": 678,
+      "ab_hits10": 592,
+      "ab_recall10": 87.32
+    },
+    {
+      "technique_id": "T1140",
+      "name": "Deobfuscate/Decode Files or Information",
+      "nomic_support": 466,
+      "nomic_hits10": 413,
+      "nomic_recall10": 88.63,
+      "ab_support": 466,
+      "ab_hits10": 438,
+      "ab_recall10": 93.99
+    },
+    {
+      "technique_id": "T1059.003",
+      "name": "Windows Command Shell",
+      "nomic_support": 358,
+      "nomic_hits10": 288,
+      "nomic_recall10": 80.45,
+      "ab_support": 358,
+      "ab_hits10": 191,
+      "ab_recall10": 53.35
+    },
+    {
+      "technique_id": "T1055",
+      "name": "Process Injection",
+      "nomic_support": 278,
+      "nomic_hits10": 184,
+      "nomic_recall10": 66.19,
+      "ab_support": 278,
+      "ab_hits10": 229,
+      "ab_recall10": 82.37
+    },
+    {
+      "technique_id": "T1105",
+      "name": "Ingress Tool Transfer",
+      "nomic_support": 261,
+      "nomic_hits10": 216,
+      "nomic_recall10": 82.76,
+      "ab_support": 261,
+      "ab_hits10": 171,
+      "ab_recall10": 65.52
+    },
+    {
+      "technique_id": "T1106",
+      "name": "Native API",
+      "nomic_support": 207,
+      "nomic_hits10": 146,
+      "nomic_recall10": 70.53,
+      "ab_support": 207,
+      "ab_hits10": 112,
+      "ab_recall10": 54.11
+    },
+    {
+      "technique_id": "T1078",
+      "name": "Valid Accounts",
+      "nomic_support": 161,
+      "nomic_hits10": 107,
+      "nomic_recall10": 66.46,
+      "ab_support": 161,
+      "ab_hits10": 134,
+      "ab_recall10": 83.23
+    },
+    {
+      "technique_id": "T1090",
+      "name": "Proxy",
+      "nomic_support": 149,
+      "nomic_hits10": 119,
+      "nomic_recall10": 79.87,
+      "ab_support": 149,
+      "ab_hits10": 135,
+      "ab_recall10": 90.6
+    },
+    {
+      "technique_id": "T1071.001",
+      "name": "Web Protocols",
+      "nomic_support": 148,
+      "nomic_hits10": 120,
+      "nomic_recall10": 81.08,
+      "ab_support": 148,
+      "ab_hits10": 127,
+      "ab_recall10": 85.81
+    },
+    {
+      "technique_id": "T1082",
+      "name": "System Information Discovery",
+      "nomic_support": 123,
+      "nomic_hits10": 76,
+      "nomic_recall10": 61.79,
+      "ab_support": 123,
+      "ab_hits10": 100,
+      "ab_recall10": 81.3
+    },
+    {
+      "technique_id": "T1053.005",
+      "name": "Scheduled Task",
+      "nomic_support": 118,
+      "nomic_hits10": 102,
+      "nomic_recall10": 86.44,
+      "ab_support": 118,
+      "ab_hits10": 106,
+      "ab_recall10": 89.83
+    },
+    {
+      "technique_id": "T1003.001",
+      "name": "LSASS Memory",
+      "nomic_support": 112,
+      "nomic_hits10": 106,
+      "nomic_recall10": 94.64,
+      "ab_support": 112,
+      "ab_hits10": 96,
+      "ab_recall10": 85.71
+    },
+    {
+      "technique_id": "T1112",
+      "name": "Modify Registry",
+      "nomic_support": 107,
+      "nomic_hits10": 91,
+      "nomic_recall10": 85.05,
+      "ab_support": 107,
+      "ab_hits10": 97,
+      "ab_recall10": 90.65
+    },
+    {
+      "technique_id": "T1021.001",
+      "name": "Remote Desktop Protocol",
+      "nomic_support": 99,
+      "nomic_hits10": 95,
+      "nomic_recall10": 95.96,
+      "ab_support": 99,
+      "ab_hits10": 88,
+      "ab_recall10": 88.89
+    },
+    {
+      "technique_id": "T1204.002",
+      "name": "Malicious File",
+      "nomic_support": 96,
+      "nomic_hits10": 90,
+      "nomic_recall10": 93.75,
+      "ab_support": 96,
+      "ab_hits10": 79,
+      "ab_recall10": 82.29
+    },
+    {
+      "technique_id": "T1083",
+      "name": "File and Directory Discovery",
+      "nomic_support": 93,
+      "nomic_hits10": 73,
+      "nomic_recall10": 78.49,
+      "ab_support": 93,
+      "ab_hits10": 86,
+      "ab_recall10": 92.47
+    },
+    {
+      "technique_id": "T1562.001",
+      "name": "Disable or Modify Tools",
+      "nomic_support": 93,
+      "nomic_hits10": 78,
+      "nomic_recall10": 83.87,
+      "ab_support": 93,
+      "ab_hits10": 86,
+      "ab_recall10": 92.47
+    },
+    {
+      "technique_id": "T1070.004",
+      "name": "File Deletion",
+      "nomic_support": 90,
+      "nomic_hits10": 69,
+      "nomic_recall10": 76.67,
+      "ab_support": 90,
+      "ab_hits10": 74,
+      "ab_recall10": 82.22
+    },
+    {
+      "technique_id": "T1566.001",
+      "name": "Spearphishing Attachment",
+      "nomic_support": 90,
+      "nomic_hits10": 80,
+      "nomic_recall10": 88.89,
+      "ab_support": 90,
+      "ab_hits10": 84,
+      "ab_recall10": 93.33
+    },
+    {
+      "technique_id": "T1041",
+      "name": "Exfiltration Over C2 Channel",
+      "nomic_support": 80,
+      "nomic_hits10": 31,
+      "nomic_recall10": 38.75,
+      "ab_support": 80,
+      "ab_hits10": 56,
+      "ab_recall10": 70.0
+    },
+    {
+      "technique_id": "T1047",
+      "name": "Windows Management Instrumentation",
+      "nomic_support": 77,
+      "nomic_hits10": 70,
+      "nomic_recall10": 90.91,
+      "ab_support": 77,
+      "ab_hits10": 69,
+      "ab_recall10": 89.61
+    },
+    {
+      "technique_id": "T1057",
+      "name": "Process Discovery",
+      "nomic_support": 77,
+      "nomic_hits10": 69,
+      "nomic_recall10": 89.61,
+      "ab_support": 77,
+      "ab_hits10": 66,
+      "ab_recall10": 85.71
+    },
+    {
+      "technique_id": "T1574.002",
+      "name": "DLL Side-Loading",
+      "nomic_support": 76,
+      "nomic_hits10": 72,
+      "nomic_recall10": 94.74,
+      "ab_support": 76,
+      "ab_hits10": 69,
+      "ab_recall10": 90.79
+    },
+    {
+      "technique_id": "T1036.005",
+      "name": "Match Legitimate Name or Location",
+      "nomic_support": 71,
+      "nomic_hits10": 58,
+      "nomic_recall10": 81.69,
+      "ab_support": 71,
+      "ab_hits10": 45,
+      "ab_recall10": 63.38
+    },
+    {
+      "technique_id": "T1547.001",
+      "name": "Registry Run Keys / Startup Folder",
+      "nomic_support": 65,
+      "nomic_hits10": 58,
+      "nomic_recall10": 89.23,
+      "ab_support": 65,
+      "ab_hits10": 60,
+      "ab_recall10": 92.31
+    },
+    {
+      "technique_id": "T1056.001",
+      "name": "Keylogging",
+      "nomic_support": 62,
+      "nomic_hits10": 56,
+      "nomic_recall10": 90.32,
+      "ab_support": 62,
+      "ab_hits10": 58,
+      "ab_recall10": 93.55
+    },
+    {
+      "technique_id": "T1005",
+      "name": "Data from Local System",
+      "nomic_support": 61,
+      "nomic_hits10": 29,
+      "nomic_recall10": 47.54,
+      "ab_support": 61,
+      "ab_hits10": 46,
+      "ab_recall10": 75.41
+    },
+    {
+      "technique_id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "nomic_support": 61,
+      "nomic_hits10": 59,
+      "nomic_recall10": 96.72,
+      "ab_support": 61,
+      "ab_hits10": 52,
+      "ab_recall10": 85.25
+    },
+    {
+      "technique_id": "T1218.011",
+      "name": "Rundll32",
+      "nomic_support": 60,
+      "nomic_hits10": 54,
+      "nomic_recall10": 90.0,
+      "ab_support": 60,
+      "ab_hits10": 44,
+      "ab_recall10": 73.33
+    },
+    {
+      "technique_id": "T1573.001",
+      "name": "Symmetric Cryptography",
+      "nomic_support": 60,
+      "nomic_hits10": 40,
+      "nomic_recall10": 66.67,
+      "ab_support": 60,
+      "ab_hits10": 53,
+      "ab_recall10": 88.33
+    },
+    {
+      "technique_id": "T1570",
+      "name": "Lateral Tool Transfer",
+      "nomic_support": 59,
+      "nomic_hits10": 32,
+      "nomic_recall10": 54.24,
+      "ab_support": 59,
+      "ab_hits10": 48,
+      "ab_recall10": 81.36
+    },
+    {
+      "technique_id": "T1095",
+      "name": "Non-Application Layer Protocol",
+      "nomic_support": 57,
+      "nomic_hits10": 51,
+      "nomic_recall10": 89.47,
+      "ab_support": 57,
+      "ab_hits10": 52,
+      "ab_recall10": 91.23
+    },
+    {
+      "technique_id": "T1219",
+      "name": "Remote Access Software",
+      "nomic_support": 56,
+      "nomic_hits10": 51,
+      "nomic_recall10": 91.07,
+      "ab_support": 56,
+      "ab_hits10": 41,
+      "ab_recall10": 73.21
+    },
+    {
+      "technique_id": "T1543.003",
+      "name": "Windows Service",
+      "nomic_support": 53,
+      "nomic_hits10": 47,
+      "nomic_recall10": 88.68,
+      "ab_support": 53,
+      "ab_hits10": 46,
+      "ab_recall10": 86.79
+    },
+    {
+      "technique_id": "T1016",
+      "name": "System Network Configuration Discovery",
+      "nomic_support": 52,
+      "nomic_hits10": 46,
+      "nomic_recall10": 88.46,
+      "ab_support": 52,
+      "ab_hits10": 44,
+      "ab_recall10": 84.62
+    },
+    {
+      "technique_id": "T1110",
+      "name": "Brute Force",
+      "nomic_support": 52,
+      "nomic_hits10": 37,
+      "nomic_recall10": 71.15,
+      "ab_support": 52,
+      "ab_hits10": 45,
+      "ab_recall10": 86.54
+    },
+    {
+      "technique_id": "T1113",
+      "name": "Screen Capture",
+      "nomic_support": 49,
+      "nomic_hits10": 37,
+      "nomic_recall10": 75.51,
+      "ab_support": 49,
+      "ab_hits10": 43,
+      "ab_recall10": 87.76
+    },
+    {
+      "technique_id": "T1033",
+      "name": "System Owner/User Discovery",
+      "nomic_support": 47,
+      "nomic_hits10": 38,
+      "nomic_recall10": 80.85,
+      "ab_support": 47,
+      "ab_hits10": 41,
+      "ab_recall10": 87.23
+    },
+    {
+      "technique_id": "T1518.001",
+      "name": "Security Software Discovery",
+      "nomic_support": 37,
+      "nomic_hits10": 31,
+      "nomic_recall10": 83.78,
+      "ab_support": 37,
+      "ab_hits10": 26,
+      "ab_recall10": 70.27
+    },
+    {
+      "technique_id": "T1074.001",
+      "name": "Local Data Staging",
+      "nomic_support": 26,
+      "nomic_hits10": 17,
+      "nomic_recall10": 65.38,
+      "ab_support": 26,
+      "ab_hits10": 23,
+      "ab_recall10": 88.46
+    },
+    {
+      "technique_id": "T1548.002",
+      "name": "Bypass User Account Control",
+      "nomic_support": 26,
+      "nomic_hits10": 24,
+      "nomic_recall10": 92.31,
+      "ab_support": 26,
+      "ab_hits10": 24,
+      "ab_recall10": 92.31
+    },
+    {
+      "technique_id": "T1012",
+      "name": "Query Registry",
+      "nomic_support": 24,
+      "nomic_hits10": 14,
+      "nomic_recall10": 58.33,
+      "ab_support": 24,
+      "ab_hits10": 20,
+      "ab_recall10": 83.33
+    },
+    {
+      "technique_id": "T1484.001",
+      "name": "Group Policy Modification",
+      "nomic_support": 24,
+      "nomic_hits10": 23,
+      "nomic_recall10": 95.83,
+      "ab_support": 24,
+      "ab_hits10": 22,
+      "ab_recall10": 91.67
+    },
+    {
+      "technique_id": "T1552.001",
+      "name": "Credentials In Files",
+      "nomic_support": 22,
+      "nomic_hits10": 19,
+      "nomic_recall10": 86.36,
+      "ab_support": 22,
+      "ab_hits10": 20,
+      "ab_recall10": 90.91
+    },
+    {
+      "technique_id": "T1569.002",
+      "name": "Service Execution",
+      "nomic_support": 22,
+      "nomic_hits10": 17,
+      "nomic_recall10": 77.27,
+      "ab_support": 22,
+      "ab_hits10": 18,
+      "ab_recall10": 81.82
+    },
+    {
+      "technique_id": "T1210",
+      "name": "Exploitation of Remote Services",
+      "nomic_support": 17,
+      "nomic_hits10": 15,
+      "nomic_recall10": 88.24,
+      "ab_support": 17,
+      "ab_hits10": 15,
+      "ab_recall10": 88.24
+    },
+    {
+      "technique_id": "T1564.001",
+      "name": "Hidden Files and Directories",
+      "nomic_support": 16,
+      "nomic_hits10": 14,
+      "nomic_recall10": 87.5,
+      "ab_support": 16,
+      "ab_hits10": 16,
+      "ab_recall10": 100.0
+    },
+    {
+      "technique_id": "T1068",
+      "name": "Exploitation for Privilege Escalation",
+      "nomic_support": 10,
+      "nomic_hits10": 9,
+      "nomic_recall10": 90.0,
+      "ab_support": 10,
+      "ab_hits10": 9,
+      "ab_recall10": 90.0
+    },
+    {
+      "technique_id": "T1072",
+      "name": "Software Deployment Tools",
+      "nomic_support": 10,
+      "nomic_hits10": 6,
+      "nomic_recall10": 60.0,
+      "ab_support": 10,
+      "ab_hits10": 6,
+      "ab_recall10": 60.0
+    },
+    {
+      "technique_id": "T1557.001",
+      "name": "LLMNR/NBT-NS Poisoning and SMB Relay",
+      "nomic_support": 7,
+      "nomic_hits10": 6,
+      "nomic_recall10": 85.71,
+      "ab_support": 7,
+      "ab_hits10": 7,
+      "ab_recall10": 100.0
+    }
+  ]
+}
