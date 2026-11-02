@@ -18,23 +18,34 @@ logger = setup_logger("threatmap.semantic")
 
 
 class OfflineFallbackEmbedder:
-    """Lightweight offline dense embedder using TF-IDF feature hashing when hub is offline."""
+    """Lightweight offline dense embedder using HashingVectorizer when hub is offline.
+
+    Uses HashingVectorizer (fixed n_features, no fitting required) so that the
+    embedding dimension is always ``n_features`` regardless of vocabulary size.
+    This prevents shape mismatches between pre-built index embeddings and live
+    query embeddings when the model is not available locally.
+    """
 
     def __init__(self, max_features: int = 384):
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        self.vectorizer = TfidfVectorizer(max_features=max_features, lowercase=True)
-        self.is_fitted = False
+        from sklearn.feature_extraction.text import HashingVectorizer
+        # HashingVectorizer always produces (n_samples, n_features) with no fit step,
+        # so index-time and query-time vectors are always the same dimension.
+        self.vectorizer = HashingVectorizer(
+            n_features=max_features,
+            lowercase=True,
+            norm="l2",
+            alternate_sign=False,
+        )
+        self.n_features = max_features
 
     def encode(self, texts: List[str], **kwargs) -> np.ndarray:
-        if not self.is_fitted:
-            mat = self.vectorizer.fit_transform(texts).toarray()
-            self.is_fitted = True
-        else:
-            mat = self.vectorizer.transform(texts).toarray()
-
+        # transform() works without fitting; output is always (len(texts), n_features)
+        mat = self.vectorizer.transform(texts).toarray().astype(np.float32)
+        # Vectors from HashingVectorizer with norm="l2" are already unit-normed,
+        # but re-normalise to guard against all-zero rows (unseen / empty texts).
         norms = np.linalg.norm(mat, axis=1, keepdims=True)
         norms[norms == 0] = 1.0
-        return (mat / norms).astype(np.float32)
+        return mat / norms
 
 
 class SemanticRetriever:
