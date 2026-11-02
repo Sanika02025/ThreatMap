@@ -325,9 +325,12 @@ def evaluate_experiment_from_cache(
     all_gold_50: List[List[str]] = []
     total_unlisted_count = 0
     empty_candidates_count = 0
+    cands_inside = 0
+    cands_outside = 0
 
     for i, row in enumerate(sentences_to_eval):
         sentence = row["sentence"]
+        cand_ids = set()
 
         # Re-derive expected messages to compute expected cache key
         if exp_num == 19:
@@ -338,6 +341,7 @@ def evaluate_experiment_from_cache(
             if len(candidates) == 0:
                 empty_candidates_count += 1
             assert len(candidates) == RAG_K, f"Expected {RAG_K} candidates, got {len(candidates)}"
+            cand_ids = {c["technique_id"] for c in candidates}
 
             if exp_num == 22:
                 messages = build_base_rag_messages(sentence, candidates)
@@ -371,9 +375,21 @@ def evaluate_experiment_from_cache(
         all_gold_50.append(gold_50)
         total_unlisted_count += len(unlisted)
 
+        if exp_num in (22, 25, 27):
+            for tid in (preds_50 + unlisted):
+                if tid in cand_ids:
+                    cands_inside += 1
+                else:
+                    cands_outside += 1
+
     metrics = score_predictions(all_preds_50, all_gold_50, valid_50)
     metrics["total_unlisted"] = total_unlisted_count
     metrics["empty_candidate_prompts"] = empty_candidates_count
+    if exp_num in (22, 25, 27):
+        metrics["candidates_inside"] = cands_inside
+        metrics["candidates_outside"] = cands_outside
+        tot_c = cands_inside + cands_outside
+        metrics["candidates_outside_pct"] = round(cands_outside / tot_c * 100.0, 1) if tot_c > 0 else 0.0
     metrics["num_sentences"] = len(sentences_to_eval)
     metrics["num_sentences_with_gold"] = sum(1 for g in all_gold_50 if len(g) > 0)
     metrics["num_in_scope_labels"] = sum(len(g) for g in all_gold_50)
@@ -402,6 +418,10 @@ def print_experiment_block(exp_num: int, name: str, metrics: Dict[str, Any], pap
     print(f"  Unlisted predictions:     {unlisted}  (excluded from precision)")
     if exp_num in (22, 25, 27):
         print(f"  Empty candidate prompts:  {metrics.get('empty_candidate_prompts', 0)}/{n_sent}")
+        c_in = metrics.get("candidates_inside", 0)
+        c_out = metrics.get("candidates_outside", 0)
+        c_pct = metrics.get("candidates_outside_pct", 0.0)
+        print(f"  Candidate adherence:      {c_in} inside / {c_out} outside ({c_pct:.1f}% outside)")
     print()
     print(f"  Counts:   TP={tp}  FP={fp}  FN={fn}")
     print()
@@ -550,9 +570,9 @@ def main():
     print("=" * 80)
     print("SUMMARY COMPARISON TABLE (sample vs paper)")
     print("=" * 80)
-    hdr = f"{'Experiment':<25} | {'P':>7} | {'R':>7} | {'F1':>7} | {'Paper F1':>9} | {'Unlisted':>8}"
+    hdr = f"{'Experiment':<25} | {'P':>7} | {'R':>7} | {'F1':>7} | {'Paper F1':>9} | {'Unlisted':>8} | {'Candidates (In/Out)':>20}"
     print(hdr)
-    print("-" * 80)
+    print("-" * 105)
     for exp_num in args.experiments:
         key = f"exp_{exp_num}"
         if key not in report_results["experiments"]:
@@ -561,11 +581,15 @@ def main():
         m = exp_data["metrics"]
         pt = exp_data["paper_target"]
         name = pt["name"]
+        if exp_num in (22, 25, 27):
+            cand_str = f"{m.get('candidates_inside', 0)} / {m.get('candidates_outside', 0)} ({m.get('candidates_outside_pct', 0.0):.1f}%)"
+        else:
+            cand_str = "N/A (no cands)"
         print(
             f"{name:<25} | {m['micro_p']:>6.2f}% | {m['micro_r']:>6.2f}% | "
-            f"{m['micro_f1']:>6.2f}% | {pt['micro_f1']:>8.2f}% | {m['total_unlisted']:>8d}"
+            f"{m['micro_f1']:>6.2f}% | {pt['micro_f1']:>8.2f}% | {m['total_unlisted']:>8d} | {cand_str:>20}"
         )
-    print("-" * 80)
+    print("-" * 105)
     print("Directions to verify (sample too small for exact matching):")
     print("  - #19 BaseLLM should show lowest recall and F1.")
     print("  - #22/25/27 RAG runs should show substantially higher recall than #19.")

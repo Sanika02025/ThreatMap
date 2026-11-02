@@ -1,6 +1,6 @@
 # RAG-ATT&CK Reproduction Study
 
-> Generated: 2026-11-02 10:11 UTC  
+> Generated: 2026-11-02 10:53 UTC  
 > Paper: *RAG-ATT&CK: Exploring RAG-Assisted Mapping of Cyber Threat Intelligence to MITRE ATT&CK Techniques* (Stijn Schuurman, University of Twente, 2025)
 
 > [!IMPORTANT]
@@ -55,13 +55,12 @@
 **ATTACK-BERT**: Reproduced R@10 = 81.84%, Paper target = 86.05%.
 Delta = -4.21%. Below target.
 - **Tested**: Mean pooling with raw descriptions gives R@10 = 81.84% (4,209/5,143).
-- **Tested**: Mean pooling with cleaned descriptions (strip `(Citation: ...)` and markdown links) gives R@10 = 82.09% (4,222/5,143), an improvement of +0.25%, but still 3.96% below the paper's 86.05%.
-- **Untested hypothesis**: The paper may have used CLS pooling or a different truncation/tokenization strategy. CLS was not computed on this hardware due to memory/time constraints.
+- **Tested**: Mean pooling with cleaned descriptions (strip `(Citation: ...)` and markdown links) gives R@10 = 82.09% (4,222/5,143).
+- **Not run**: CLS pooling was not run (time/hardware constraints on CPU).
+- The 4.2-point gap to the paper's 86.05% is unexplained (untested hypotheses: pooling, text cleaning differences, MITRE data version).
 
 **Reranker (ms-marco)**: Reproduced R@10 = 80.75%, Paper target = 74.59%.
-Delta = +6.16%. Our reranker **improves** over nomic baseline (80.75% vs 80.52%), while the paper shows it **hurts** (74.59% < 80.28%). This is a qualitative reversal.
-- **Tested**: Testing with max_length=256 and raw descriptions yields R@10 = 80.75% (4,153/5,143), identical to the baseline reranker score. This confirms max_length does not account for the paper's 74.59% degradation.
-- **Untested hypothesis**: The paper's reranker pipeline may have had candidate inputs formatted differently, used a different top-k pool (e.g. k=10 or k=20 rather than 15), or evaluated with a different negative sampling / scoring threshold.
+Only max_length=256 was run (R@10 80.75%, vs nomic baseline 80.52%). The reranker did not degrade recall as in the paper (74.59%); the cause is unidentified. Untested hypotheses: max_length, input formatting of sentence/description pairs, candidate pool, description cleaning.
 
 ---
 
@@ -87,6 +86,10 @@ Delta = +6.16%. Our reranker **improves** over nomic baseline (80.75% vs 80.52%)
 | #25 | Optimized RAG 8B (#25) | 10.86% | 81.48% | 19.17% | 15.40% | [14.56, 24.15]% | TP=44 FP=361 FN=10 | 23 | 23 | 29.65% | 16.84% |
 | #27 | Context 1-sent (#27) | 12.46% | 70.37% | 21.17% | 13.58% | [15.61, 27.01]% | TP=38 FP=267 FN=16 | 36 | 23 | 31.98% | 15.60% |
 
+With 49 labelled sentences the bootstrap CIs are wide (e.g. #22: 13.4-22.7%). The paper's values come from 19,178 sentences and are not directly comparable. #19's CI (10.1-17.4%) does NOT contain the paper's 4.77%; #22's contains 18.81%; #25's CI (14.6-24.2%) contains 15.40%; #27's CI (15.6-27.0%) does not contain the paper's 13.58%.
+
+The paper's ordering BaseRAG (18.81) > Optimized (15.40) > Context 1 (13.58) was NOT reproduced: our point estimates are 17.86 < 19.17 < 21.17. The CIs overlap heavily, so no ordering among #22, #25, #27 can be claimed from this sample. What is supported: all three RAG runs have far fewer false positives per labelled sentence than BaseLLM and 70-81% recall.
+
 > [!CAUTION]
 > Macro F1 values above are averaged over only a small subset of the 50 classes
 > (those with >=1 gold label in the ~191-sentence sample). They are **unreliable**
@@ -106,15 +109,27 @@ Delta = +6.16%. Our reranker **improves** over nomic baseline (80.75% vs 80.52%)
 
 ---
 
-## 4. LLM Output Sanity Check: Unlisted Predictions
+## 4. LLM Candidate Adherence and Unlisted Predictions
 
-**Finding (tested)**: llama3.1:8b-instruct-q4_0 frequently predicts technique IDs outside the 10 candidates presented in the RAG prompt.
+### Candidate Adherence (inside vs outside top-10 candidates)
 
+| Experiment | Total In-Scope Predictions | Predicted Inside Candidates | Predicted Outside Candidates | Outside % |
+| :--- | ---: | ---: | ---: | ---: |
+| #22 BaseRAG 8B | 426 | 403 | 23 | 5.4% |
+| #25 Optimized RAG 8B | 428 | 403 | 25 | 5.8% |
+| #27 Context 1-sent | 341 | 302 | 39 | 11.4% |
+
+The model does not always stay inside its candidates: 5.4% to 11.4% of predicted codes fall outside the top-10 candidates provided in the prompt.
+
+### Unlisted Predictions (codes outside the 50 classes)
+
+- "Unlisted" codes are those outside the 50 valid MITRE ATT&CK classes (e.g., hallucinated or non-existent sub-techniques), NOT codes outside the candidate list.
+- Paper unlisted rates: #22: 659 / 25,641 = 2.6%; #19: 2,223 / 23,944 = 9.3%.
+- Reproduction sample unlisted rates: #22: 21 / 426 = 4.9%; #19: 31 / 525 = 5.9%.
 - For BaseLLM (#19): No candidates in prompt (expected). Model predicts from parametric knowledge only.
-- For BaseRAG (#22), Optimized RAG (#25), Context 1-sent (#27): Top-10 candidate techniques are provided in the prompt for every sentence. Predictions outside the candidate list are tracked as unlisted.
+- For BaseRAG (#22), Optimized RAG (#25), Context 1-sent (#27): Top-10 candidate techniques are provided in the prompt for every sentence.
 - **The parser is correct**: `regex r'\b(T\d{4}(?:\.\d{3})?)\b'` faithfully extracts all codes written by the model. Parser was NOT changed.
 - **Unlisted codes are excluded from precision denominator** (as the paper specifies) but are counted and reported.
-- This behaviour matches the paper's observation of high unlisted prediction rates for 8B models.
 - Full inspection log: `artifacts/llm_output_sanity_check.txt`.
 
 ---
@@ -137,17 +152,16 @@ Delta = +6.16%. Our reranker **improves** over nomic baseline (80.75% vs 80.52%)
 
 | Item | Status | Notes |
 | :--- | :---: | :--- |
-| Table 3: Nomic full (with prefixes) | REPRODUCED | within ~0.2% of paper target |
-| Table 3: Nomic ablations (paragraph, chunks) | REPRODUCED (direction) | prefix setting affects results |
-| Table 3: ATTACK-BERT Full | PARTIAL MATCH | see deviation analysis |
-| Table 3: Reranker (ms-marco) | NOT MATCHED | qualitative reversal vs paper |
-| Table 2: #19 BaseLLM 8B | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |
-| Table 2: #22 BaseRAG 8B | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |
-| Table 2: #25 Optimized RAG 8B | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |
-| Table 2: #27 Context 1-sent | DIRECTIONAL (~191 sent) | sample limited to 191 sentences |
-| Table 2: #23, #24, #26, #28 (8B) | NOT RUN | time/resource constraint |
-| Table 2: #29, #30, #36 (70B) | NOT RUN | no GPU |
-| Extension: BM25 + RRF fusion | DONE (extension) | not in paper |
+| Table 3: Nomic full (with prefixes) | REPRODUCED (within 0.3 points) | 80.52% vs 80.28% |
+| Table 3: Nomic chunk 750/80 | DEVIATION (74.92 vs 77.61) | chunking boundary handling |
+| Table 3: Nomic first paragraph | DEVIATION (with prefixes 69.45 vs 77.06) | paragraph extraction differences |
+| Table 3: Nomic chunks 375/50 | REPRODUCED (within 0.2 points) | 71.86% vs 71.70% |
+| Table 3: ATTACK-BERT Full | NOT REPRODUCED | 81.84% vs 86.05% (−4.21%) |
+| Table 3: Reranker (ms-marco) | NOT REPRODUCED (qualitative reversal) | 80.75% (+0.23% vs baseline) vs paper 74.59% (−5.69%) |
+| Table 2: 8B LLM runs (#19, #22, #25, #27) | smoke test on 191 sentences, 2 reports; BaseLLM above paper, RAG ordering not reproduced | Point estimates: 17.86 < 19.17 < 21.17; CIs overlap |
+| Table 2: #23, #24, #26, #28 (8B) | NOT RUN (hardware / time) | |
+| Table 2: #29, #30, #36 (70B) | NOT RUN (hardware — no GPU) | |
+| Extension: BM25 + RRF fusion | EXTENSION (not in paper) | Evaluated over all 4,070 sentences |
 | Fig. 2: Label count distribution | GENERATED | from TRAM data |
 | Fig. 4: Class distribution | GENERATED | from TRAM data |
 
@@ -160,7 +174,7 @@ Delta = +6.16%. Our reranker **improves** over nomic baseline (80.75% vs 80.52%)
 3. **No summarized descriptions (Item 5)**: The Appendix C summarization experiment was not run. Paper target for nomic+summaries: R@10=83.93%.
 4. **NumPy index vs Weaviate**: The paper used a Weaviate vector database. This reproduction uses a NumPy dot-product index. Results should be equivalent for exact cosine search but may differ if Weaviate applied HNSW approximation.
 5. **Nomic prefix choice**: `search_query:` / `search_document:` follows nomic's documentation. The paper does not explicitly state which prefix was used. Both prefix and no-prefix results are reported.
-6. **Reranker reversal**: Our reranker improves over nomic baseline whereas the paper shows degradation. The cause is not identified (untested hypothesis: different baseline or different max_length).
+6. **Reranker reversal**: Only max_length=256 was run (R@10 80.75%, vs nomic baseline 80.52%). The reranker did not degrade recall as in the paper (74.59%); the cause is unidentified. Untested hypotheses: max_length, input formatting of sentence/description pairs, candidate pool, description cleaning.
 7. **Sample scope**: All 191 sentences from 2 complete reports evaluated for #19, #22, #25, #27.
 
 ---

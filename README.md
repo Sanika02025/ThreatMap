@@ -69,8 +69,8 @@ Primary nomic prefix: `search_query:` for sentences, `search_document:` for desc
 See [`artifacts/retrieval_table3_real_results.json`](artifacts/retrieval_table3_real_results.json) for full R@1/5/10/20 breakdown.
 
 **Deviations**:
-- **ATTACK-BERT** (−4.21%): Tested mean pooling with raw descriptions (81.84%) vs cleaned descriptions (82.09%, +0.25%). Text cleaning yields a modest gain but does not close the gap to 86.05%. See `artifacts/table3_ablation_investigation.json`.
-- **Reranker** (+6.16% vs paper −5.69% vs nomic): Qualitative reversal — in our run the reranker *improves* over nomic (80.75% vs 80.52%), while the paper shows it *hurts* (74.59%). Tested max_length=256 gives identical 80.75%, confirming max_length is not the cause.
+- **ATTACK-BERT** (−4.21%): Tested mean pooling with raw descriptions (81.84%) vs cleaned descriptions (82.09%, +0.25%). CLS pooling not run; the 4.2-point gap to the paper's 86.05% is unexplained (untested hypotheses: pooling, text cleaning differences, MITRE data version). See `artifacts/table3_ablation_investigation.json`.
+- **Reranker** (+6.16% vs paper −5.69% vs nomic): Only max_length=256 was run (R@10 80.75%, vs nomic baseline 80.52%). The reranker did not degrade recall as in the paper (74.59%); the cause is unidentified. Untested hypotheses: max_length, input formatting of sentence/description pairs, candidate pool, description cleaning.
 
 
 ### Table 2: LLM Classification (8B only, ~191-sentence sample)
@@ -85,7 +85,23 @@ See [`artifacts/retrieval_table3_real_results.json`](artifacts/retrieval_table3_
 | #25 | Optimized RAG 8B (ATTACK-BERT, k=10) | 10.86% | 81.48% | 19.17% | 15.40% | [14.56, 24.15]% | 23 |
 | #27 | Context 1-sentence (ATTACK-BERT, k=10) | 12.46% | 70.37% | 21.17% | 13.58% | [15.61, 27.01]% | 36 |
 
-All 191 sentences evaluated from 2 complete CTI reports (49 sentences with gold labels, 54 label instances across 23 classes). Empty candidate list count: **0/191** for all RAG runs. Notice #22 BaseRAG reproduced Micro F1 is 17.86% (paper is 18.81%, well within the 95% bootstrap CI). Non-8B experiments (#29, #30, #36) are marked NOT RUN (hardware — no GPU).
+With 49 labelled sentences the bootstrap CIs are wide (e.g. #22: 13.4-22.7%). The paper's values come from 19,178 sentences and are not directly comparable. #19's CI (10.1-17.4%) does NOT contain the paper's 4.77%; #22's contains 18.81%; #25's CI (14.6-24.2%) contains 15.40%; #27's CI (15.6-27.0%) does not contain the paper's 13.58%.
+
+The paper's ordering BaseRAG (18.81) > Optimized (15.40) > Context 1 (13.58) was NOT reproduced: our point estimates are 17.86 < 19.17 < 21.17. The CIs overlap heavily, so no ordering among #22, #25, #27 can be claimed from this sample. What is supported: all three RAG runs have far fewer false positives per labelled sentence than BaseLLM and 70-81% recall.
+
+All 191 sentences evaluated from 2 complete CTI reports (49 sentences with gold labels, 54 label instances across 23 classes). Empty candidate list count: **0/191** for all RAG runs. Non-8B experiments (#29, #30, #36) are marked NOT RUN (hardware — no GPU).
+
+### Candidate Adherence and Unlisted Predictions
+
+- **Candidate Adherence** (inside vs outside top-10 candidates in prompt):
+  - #22 BaseRAG 8B: 403 inside / 23 outside (5.4%)
+  - #25 Optimized RAG 8B: 403 inside / 25 outside (5.8%)
+  - #27 Context 1-sent: 302 inside / 39 outside (11.4%)
+  The model does not always stay inside its candidates.
+- **Unlisted Predictions** (codes outside 50 classes):
+  - Paper unlisted rates: #22 659/25,641 = 2.6%, #19 2,223/23,944 = 9.3%
+  - Reproduction sample unlisted rates: #22 21/426 = 4.9%, #19 31/525 = 5.9%
+  "Unlisted" means codes outside the 50 classes, not outside the candidate list.
 
 ### Extension: BM25 + RRF Fusion (not in paper)
 

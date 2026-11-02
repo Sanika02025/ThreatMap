@@ -2,10 +2,9 @@
 build_ablation_results.py — Assemble table3_ablation_investigation.json from
 empirical results already computed and cached by investigate_table3_misses.py.
 
-Only numbers that were actually computed are written.  Variants that hung
-(max_length=512 reranker, CLS pooling) are marked NOT_RUN with an explanation.
-
-Run: python scripts/build_ablation_results.py
+Only numbers that were actually computed are written. Variants that were not
+run (max_length=512 reranker, cleaned rerankers, CLS pooling) are marked
+NOT_RUN with accurate per-variant explanations.
 """
 
 import json
@@ -44,10 +43,9 @@ def main():
     results = {}
 
     # ── ATTACK-BERT Mean pooling, raw ────────────────────────────────────────
-    # Already computed: attack_bert_queries.npy (mean pooling)
     print("Computing ATTACK-BERT mean/raw from cached embeddings...")
     q_embs = np.load(str(EMB_CACHE_DIR / "attack_bert_queries.npy"))
-    import os, sys
+    import os
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
     from sentence_transformers import SentenceTransformer
@@ -84,22 +82,21 @@ def main():
         "pooling": "mean", "cleaned": True, "status": "DONE"
     }
 
-    # ── ATTACK-BERT CLS pooling — NOT RUN (hung / too slow on CPU-only laptop) ──
+    # ── ATTACK-BERT CLS pooling — NOT RUN (time/hardware constraints) ────────
     results["attack_bert_cls_raw"] = {
         "recall@10": None, "hits": None,
         "pooling": "cls", "cleaned": False,
         "status": "NOT_RUN",
-        "reason": "CrossEncoder CLS inference hung after weight-load on CPU-only laptop (16 GB RAM, no GPU). Untested hypothesis: CLS pooling would differ by <1% based on typical BERT behaviour."
+        "reason": "Not run (time/hardware constraints on CPU)."
     }
     results["attack_bert_cls_clean"] = {
         "recall@10": None, "hits": None,
         "pooling": "cls", "cleaned": True,
         "status": "NOT_RUN",
-        "reason": "CLS pooling variant not computed (same reason as attack_bert_cls_raw)."
+        "reason": "Not run (time/hardware constraints on CPU)."
     }
 
     # ── Reranker max_length=256, raw ─────────────────────────────────────────
-    # Cached as msmarco_reranker_scores_reranker_max256_raw.npy (identical size to baseline)
     nomic_q = np.load(str(EMB_CACHE_DIR / "nomic_queries_with_prefixes.npy"))
     nomic_t = np.load(str(EMB_CACHE_DIR / "nomic_tech_full_with_prefixes.npy"))
     nomic_sim = np.dot(nomic_q, nomic_t.T)
@@ -125,41 +122,31 @@ def main():
         "max_length": 256, "cleaned": False, "status": "DONE"
     }
 
-    # ── Reranker max_length=512 variants — NOT RUN ───────────────────────────
-    for var_id, max_len, cleaned_flag in [
-        ("reranker_max512_raw", 512, False),
-        ("reranker_max256_clean", 256, True),
-        ("reranker_max512_clean", 512, True),
-    ]:
-        results[var_id] = {
-            "recall@10": None, "hits": None,
-            "max_length": max_len, "cleaned": cleaned_flag,
-            "status": "NOT_RUN",
-            "reason": (
-                "CrossEncoder inference with max_length=512 on 4,070 sentence pairs "
-                "exceeded available CPU memory / hung after model load on this hardware "
-                "(i5-12450H, 16 GB RAM, no GPU). The max_length=256 raw variant shows "
-                "the same recall as the baseline (80.75%), suggesting this dimension "
-                "does not explain the paper's 74.59% result."
-            )
-        }
+    # ── Reranker max_length=512 and clean variants — NOT RUN ─────────────────
+    results["reranker_max512_raw"] = {
+        "recall@10": None, "hits": None,
+        "max_length": 512, "cleaned": False,
+        "status": "NOT_RUN",
+        "reason": "Not run (CrossEncoder inference with max_length=512 hung after model load on CPU)."
+    }
+    results["reranker_max256_clean"] = {
+        "recall@10": None, "hits": None,
+        "max_length": 256, "cleaned": True,
+        "status": "NOT_RUN",
+        "reason": "Not run (time/hardware constraints on CPU)."
+    }
+    results["reranker_max512_clean"] = {
+        "recall@10": None, "hits": None,
+        "max_length": 512, "cleaned": True,
+        "status": "NOT_RUN",
+        "reason": "Not run (time/hardware constraints on CPU)."
+    }
 
     # Write
     with open(OUT_FILE, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
     print(f"\nSaved ablation results to {OUT_FILE}")
-    print("\nSUMMARY:")
-    print(f"  Paper target ATTACK-BERT: 86.05%")
-    for k in ["attack_bert_mean_raw", "attack_bert_mean_clean"]:
-        v = results[k]
-        print(f"    {k}: {v['recall@10']}%  [TESTED]")
-    for k in ["attack_bert_cls_raw", "attack_bert_cls_clean"]:
-        print(f"    {k}: NOT_RUN")
-    print(f"\n  Paper target reranker: 74.59% (vs baseline nomic 80.28%)")
-    print(f"    reranker_max256_raw: {results['reranker_max256_raw']['recall@10']}%  [TESTED]")
-    print(f"    reranker_max512_raw / clean variants: NOT_RUN (hardware limit)")
 
 
 if __name__ == "__main__":
     main()
-
