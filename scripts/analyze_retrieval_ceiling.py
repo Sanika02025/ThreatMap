@@ -126,12 +126,6 @@ def analyze_experiment(
     cand_recall = round(total_gold_in_candidates / total_gold * 100, 2) if total_gold > 0 else 0.0
     selection_rate = round(total_tp / total_gold_in_candidates * 100, 2) if total_gold_in_candidates > 0 else 0.0
 
-    larger_loss = (
-        "retrieval stage" if total_gold_not_in_candidates > total_gold_missed_by_llm
-        else "LLM selection stage" if total_gold_missed_by_llm > total_gold_not_in_candidates
-        else "equal loss"
-    )
-
     return {
         "exp_id": exp_id,
         "total_gold_labels": total_gold,
@@ -141,7 +135,6 @@ def analyze_experiment(
         "tp": total_tp,
         "gold_missed_by_llm": total_gold_missed_by_llm,
         "selection_rate_pct": selection_rate,
-        "larger_loss_stage": larger_loss,
         "per_sentence": per_sentence,
     }
 
@@ -193,16 +186,17 @@ def main():
         print(f"  (c) Predicted by LLM (TP):               {res['tp']} (selection rate: {res['selection_rate_pct']}%)")
         print(f"  (d) Retrieval misses (not in candidates): {res['gold_not_in_candidates']}")
         print(f"  (e) LLM misses (in cands, not predicted): {res['gold_missed_by_llm']}")
-        print(f"  Stage losing more:                        {res['larger_loss_stage']} (tested)")
 
     print("\n" + "=" * 80)
     print("SHORT TABLE: RETRIEVAL CEILING & ERROR DECOMPOSITION")
     print("=" * 80)
-    print(f"{'Experiment':<24} | {'Gold':>4} | {'In Cand':>7} | {'Cand R@10':>9} | {'TP':>4} | {'Retr Miss':>9} | {'LLM Miss':>8} | {'Sel Rate':>8} | {'Larger Loss':<18}")
+    print(f"{'Experiment':<24} | {'Gold':>4} | {'In Cand':>7} | {'Cand R@10':>9} | {'TP':>4} | {'Retr Miss':>9} | {'LLM Miss':>8} | {'Sel Rate':>8}")
     print("-" * 80)
     for exp_id, r in results.items():
-        print(f"{r['label']:<24} | {r['total_gold_labels']:>4} | {r['gold_in_candidates']:>7} | {r['candidate_recall_pct']:>8.2f}% | {r['tp']:>4} | {r['gold_not_in_candidates']:>9} | {r['gold_missed_by_llm']:>8} | {r['selection_rate_pct']:>7.2f}% | {r['larger_loss_stage']:<18}")
+        print(f"{r['label']:<24} | {r['total_gold_labels']:>4} | {r['gold_in_candidates']:>7} | {r['candidate_recall_pct']:>8.2f}% | {r['tp']:>4} | {r['gold_not_in_candidates']:>9} | {r['gold_missed_by_llm']:>8} | {r['selection_rate_pct']:>7.2f}%")
     print("=" * 80)
+    print("With 54 gold labels, differences of 1-2 labels (e.g. #22: 6 retrieval misses vs 7 LLM misses) are not meaningful; no claim is made about which stage loses more.")
+    print()
     print("Definitions:")
     print("  Gold: total in-scope gold labels in the 191-sentence sample (54).")
     print("  In Cand: gold labels appearing in top-10 candidates presented to LLM.")
@@ -211,7 +205,6 @@ def main():
     print("  Retr Miss: gold labels NOT retrieved into top-10 candidates (Gold - In Cand).")
     print("  LLM Miss: gold labels present in candidates that LLM failed to select (In Cand - TP).")
     print("  Sel Rate: LLM selection rate = TP / In Cand.")
-    print("  Larger Loss: comparison of Retr Miss vs LLM Miss.")
 
     output_data = {
         "description": "Retrieval ceiling and error decomposition for #22, #25, #27 on 191-sentence sample.",

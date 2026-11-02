@@ -12,7 +12,6 @@
       "tp": 41,
       "gold_missed_by_llm": 7,
       "selection_rate_pct": 85.42,
-      "larger_loss_stage": "LLM selection stage",
       "label": "#22 BaseRAG 8B"
     },
     "exp25_optimized_rag": {
@@ -24,7 +23,6 @@
       "tp": 44,
       "gold_missed_by_llm": 5,
       "selection_rate_pct": 89.8,
-      "larger_loss_stage": "equal loss",
       "label": "#25 Optimized RAG 8B"
     },
     "exp27_context1": {
@@ -36,7 +34,6 @@
       "tp": 38,
       "gold_missed_by_llm": 11,
       "selection_rate_pct": 77.55,
-      "larger_loss_stage": "LLM selection stage",
       "label": "#27 Context 1-sent"
     }
   }

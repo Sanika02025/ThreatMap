@@ -3,7 +3,7 @@
 > Computed from cached embeddings; no new model runs.
 > Labelled sentences: 4070 | Label instances: 5143
 
-**Spearman(support, Recall@10):**  Nomic = -0.0674  |  ATTACK-BERT = -0.1625
+Spearman rs = -0.07 (nomic) and -0.16 (ATTACK-BERT): no meaningful relationship between class support and Recall@10 was found.
 
 ## Full Table (sorted by support, descending)
 

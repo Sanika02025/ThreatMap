@@ -1,6 +1,6 @@
 # RAG-ATT&CK Reproduction Study
 
-> Generated: 2026-11-02 12:43 UTC  
+> Generated: 2026-11-02 16:29 UTC  
 > Paper: *RAG-ATT&CK: Exploring RAG-Assisted Mapping of Cyber Threat Intelligence to MITRE ATT&CK Techniques* (Stijn Schuurman, University of Twente, 2025)
 
 > [!IMPORTANT]
@@ -62,6 +62,50 @@ Delta = -4.21%. Below target.
 **Reranker (ms-marco)**: Reproduced R@10 = 80.75%, Paper target = 74.59%.
 Only max_length=256 was run (R@10 80.75%, vs nomic baseline 80.52%). The reranker did not degrade recall as in the paper (74.59%); the cause is unidentified. Untested hypotheses: max_length, input formatting of sentence/description pairs, candidate pool, description cleaning.
 
+### Per-Class Retrieval Analysis
+
+Spearman rs = -0.07 (nomic) and -0.16 (ATTACK-BERT): no meaningful relationship between class support and Recall@10 was found.
+
+**Best 5 classes by Nomic Recall@10**:
+
+| Technique | Name | R@10 | Support |
+| :--- | :--- | ---: | ---: |
+| T1190 | Exploit Public-Facing Application | 96.72% | 61 |
+| T1021.001 | Remote Desktop Protocol | 95.96% | 99 |
+| T1484.001 | Group Policy Modification | 95.83% | 24 |
+| T1574.002 | DLL Side-Loading | 94.74% | 76 |
+| T1003.001 | LSASS Memory | 94.64% | 112 |
+
+**Worst 5 classes by Nomic Recall@10**:
+
+| Technique | Name | R@10 | Support |
+| :--- | :--- | ---: | ---: |
+| T1041 | Exfiltration Over C2 Channel | 38.75% | 80 |
+| T1005 | Data from Local System | 47.54% | 61 |
+| T1570 | Lateral Tool Transfer | 54.24% | 59 |
+| T1012 | Query Registry | 58.33% | 24 |
+| T1072 | Software Deployment Tools | 60.00% | 10 |
+
+**Best 5 classes by ATTACK-BERT Recall@10**:
+
+| Technique | Name | R@10 | Support |
+| :--- | :--- | ---: | ---: |
+| T1557.001 | LLMNR/NBT-NS Poisoning and SMB Relay | 100.00% | 7 |
+| T1564.001 | Hidden Files and Directories | 100.00% | 16 |
+| T1140 | Deobfuscate/Decode Files or Information | 93.99% | 466 |
+| T1056.001 | Keylogging | 93.55% | 62 |
+| T1566.001 | Spearphishing Attachment | 93.33% | 90 |
+
+**Worst 5 classes by ATTACK-BERT Recall@10**:
+
+| Technique | Name | R@10 | Support |
+| :--- | :--- | ---: | ---: |
+| T1059.003 | Windows Command Shell | 53.35% | 358 |
+| T1106 | Native API | 54.11% | 207 |
+| T1072 | Software Deployment Tools | 60.00% | 10 |
+| T1036.005 | Match Legitimate Name or Location | 63.38% | 71 |
+| T1105 | Ingress Tool Transfer | 65.52% | 261 |
+
 ---
 
 ## 3. Table 2: LLM Classification Experiments
@@ -109,7 +153,7 @@ The paper's ordering BaseRAG (18.81) > Optimized (15.40) > Context 1 (13.58) was
 
 ---
 
-## 4. LLM Candidate Adherence and Unlisted Predictions
+## 4. LLM Candidate Adherence and Error Analysis
 
 ### Candidate Adherence (inside vs outside top-10 candidates)
 
@@ -121,13 +165,26 @@ The paper's ordering BaseRAG (18.81) > Optimized (15.40) > Context 1 (13.58) was
 
 The model does not always stay inside its candidates: 5.4% to 11.4% of predicted codes fall outside the top-10 candidates provided in the prompt.
 
+### False Positives on Unlabelled Sentences
+
+| Experiment | Total In-Scope FP | FP on Labelled Sentences | FP on Unlabelled Sentences | Share on Unlabelled |
+| :--- | ---: | ---: | ---: | ---: |
+| BaseLLM 8B (#19) | 457 | 103 | 354 | 77.5% |
+| BaseRAG 8B (#22) | 364 | 68 | 296 | 81.3% |
+| Optimized RAG 8B (#25) | 361 | 66 | 295 | 81.7% |
+| Context 1-sent (#27) | 267 | 33 | 234 | 87.6% |
+
+Most false positives fall on sentences with no gold label, consistent with the paper's observation that low precision is the main weakness.
+
 ### Retrieval Ceiling & Error Decomposition (191 sentences, 54 gold labels)
 
-| Experiment | Gold Labels | In Candidates | Candidate R@10 | TP (Selected) | Retr Misses | LLM Misses | Selection Rate | Larger Loss Stage |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| #22 BaseRAG 8B | 54 | 48 | 88.89% | 41 | 6 | 7 | 85.42% | LLM selection stage |
-| #25 Optimized RAG 8B | 54 | 49 | 90.74% | 44 | 5 | 5 | 89.80% | equal loss |
-| #27 Context 1-sent | 54 | 49 | 90.74% | 38 | 5 | 11 | 77.55% | LLM selection stage |
+| Experiment | Gold Labels | In Candidates | Candidate R@10 | TP (Selected) | Retr Misses | LLM Misses | Selection Rate |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| #22 BaseRAG 8B | 54 | 48 | 88.89% | 41 | 6 | 7 | 85.42% |
+| #25 Optimized RAG 8B | 54 | 49 | 90.74% | 44 | 5 | 5 | 89.80% |
+| #27 Context 1-sent | 54 | 49 | 90.74% | 38 | 5 | 11 | 77.55% |
+
+With 54 gold labels, differences of 1-2 labels (e.g. #22: 6 retrieval misses vs 7 LLM misses) are not meaningful; no claim is made about which stage loses more.
 
 > **Definitions**:
 > - **Gold Labels**: In-scope technique annotations in the sample (54).
@@ -142,6 +199,7 @@ The model does not always stay inside its candidates: 5.4% to 11.4% of predicted
 - "Unlisted" codes are those outside the 50 valid MITRE ATT&CK classes (e.g., hallucinated or non-existent sub-techniques), NOT codes outside the candidate list.
 - Paper unlisted rates: #22: 659 / 25,641 = 2.6%; #19: 2,223 / 23,944 = 9.3%.
 - Reproduction sample unlisted rates: #22: 21 / 426 = 4.9%; #19: 31 / 525 = 5.9%.
+- Our rates (#22: 4.9%, #19: 5.9%) come from 191 sentences and the paper's from 19,178, so they are not directly comparable.
 - For BaseLLM (#19): No candidates in prompt (expected). Model predicts from parametric knowledge only.
 - For BaseRAG (#22), Optimized RAG (#25), Context 1-sent (#27): Top-10 candidate techniques are provided in the prompt for every sentence.
 - **The parser is correct**: `regex r'\b(T\d{4}(?:\.\d{3})?)\b'` faithfully extracts all codes written by the model. Parser was NOT changed.
@@ -193,7 +251,8 @@ The model does not always stay inside its candidates: 5.4% to 11.4% of predicted
 4. **Unperformed embedding / reranking variants**: ATTACK-BERT CLS pooling and CrossEncoder reranking with `max_length=512` were not run (hung on this hardware).
 5. **No separate development set**: All runs were evaluated directly on test data without a separate tuning set; no hyperparameter tuning claims are made.
 6. **Paper ordering not reproduced**: The paper's reported ordering BaseRAG (18.81%) > Optimized (15.40%) > Context 1 (13.58%) was NOT reproduced in our sample point estimates (17.86% < 19.17% < 21.17%). CIs overlap heavily, so no ranking among them can be claimed.
-7. **Unexplained retrieval deviations**: The reranker reversal (improves +0.23% vs paper's -5.69% degradation) and the 4.2-point ATTACK-BERT gap (81.84% vs 86.05%) remain unexplained (untested hypotheses: candidate pool size, pair formatting, pooling, text cleaning).
+7. **Unexplained retrieval deviations**: The reranker reversal (slight +0.23% increase vs paper's -5.69% degradation) and the 4.2-point ATTACK-BERT gap (81.84% vs 86.05%) remain unexplained (untested hypotheses: candidate pool size, pair formatting, pooling, text cleaning).
+8. **Class support and retrieval performance**: Spearman rs = -0.07 (nomic) and -0.16 (ATTACK-BERT): no meaningful relationship between class support and Recall@10 was found.
 
 ### Future Work
 

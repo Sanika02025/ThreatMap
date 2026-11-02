@@ -32,8 +32,11 @@ This document outlines the scope boundaries, unperformed experiments, empirical 
    - Our observed sample point estimates are `17.86% (#22) < 19.17% (#25) < 21.17% (#27)`. Because confidence intervals overlap heavily, no ordering among #22, #25, and #27 can be claimed from this sample.
 
 7. **Unexplained Retrieval Deviations**:
-   - **Reranker reversal**: In our run, the ms-marco reranker marginally improves over the nomic baseline (80.75% vs 80.52%), whereas the paper reports that the reranker degraded recall (74.59% vs 80.28%). The cause is unidentified (untested hypotheses: candidate pool size, pair formatting, scoring thresholds, description cleaning).
+   - **Reranker reversal**: In our run, the ms-marco reranker slightly exceeds the nomic baseline (80.75% vs 80.52%), whereas the paper reports that the reranker degraded recall (74.59% vs 80.28%). The cause is unidentified (untested hypotheses: candidate pool size, pair formatting, scoring thresholds, description cleaning).
    - **ATTACK-BERT gap**: Reproduced R@10 is 81.84% (raw) and 82.09% (cleaned), remaining 3.96–4.21 points below the paper's 86.05%. The gap remains unexplained (untested hypotheses: pooling method, tokenization/truncation differences, MITRE ATT&CK version discrepancies).
+
+8. **Class Support and Retrieval Performance**:
+   - Spearman rs = -0.07 (nomic) and -0.16 (ATTACK-BERT): no meaningful relationship between class support and Recall@10 was found.
 
 ---
 

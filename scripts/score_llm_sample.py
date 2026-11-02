@@ -327,6 +327,8 @@ def evaluate_experiment_from_cache(
     empty_candidates_count = 0
     cands_inside = 0
     cands_outside = 0
+    fp_labelled = 0
+    fp_unlabelled = 0
 
     for i, row in enumerate(sentences_to_eval):
         sentence = row["sentence"]
@@ -375,6 +377,13 @@ def evaluate_experiment_from_cache(
         all_gold_50.append(gold_50)
         total_unlisted_count += len(unlisted)
 
+        # FP breakdown: labelled vs unlabelled sentences
+        sent_fp = len(set(preds_50) - set(gold_50))
+        if len(gold_50) > 0:
+            fp_labelled += sent_fp
+        else:
+            fp_unlabelled += sent_fp
+
         if exp_num in (22, 25, 27):
             for tid in (preds_50 + unlisted):
                 if tid in cand_ids:
@@ -385,6 +394,9 @@ def evaluate_experiment_from_cache(
     metrics = score_predictions(all_preds_50, all_gold_50, valid_50)
     metrics["total_unlisted"] = total_unlisted_count
     metrics["empty_candidate_prompts"] = empty_candidates_count
+    metrics["fp_labelled"] = fp_labelled
+    metrics["fp_unlabelled"] = fp_unlabelled
+    metrics["fp_unlabelled_pct"] = round(fp_unlabelled / metrics["total_fp"] * 100.0, 1) if metrics["total_fp"] > 0 else 0.0
     if exp_num in (22, 25, 27):
         metrics["candidates_inside"] = cands_inside
         metrics["candidates_outside"] = cands_outside
@@ -424,6 +436,10 @@ def print_experiment_block(exp_num: int, name: str, metrics: Dict[str, Any], pap
         print(f"  Candidate adherence:      {c_in} inside / {c_out} outside ({c_pct:.1f}% outside)")
     print()
     print(f"  Counts:   TP={tp}  FP={fp}  FN={fn}")
+    fp_lab = metrics.get("fp_labelled", 0)
+    fp_unlab = metrics.get("fp_unlabelled", 0)
+    fp_unlab_pct = metrics.get("fp_unlabelled_pct", 0.0)
+    print(f"  FP breakdown:             {fp_unlab} of {fp} ({fp_unlab_pct:.1f}%) on unlabelled sentences ({fp_lab} on labelled)")
     print()
 
     mp, mr, mf = metrics["micro_p"], metrics["micro_r"], metrics["micro_f1"]

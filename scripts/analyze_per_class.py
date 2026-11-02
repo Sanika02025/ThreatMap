@@ -249,8 +249,7 @@ def main():
         "> Computed from cached embeddings; no new model runs.",
         f"> Labelled sentences: {len(labelled)} | Label instances: {TOTAL_LABELS}",
         "",
-        f"**Spearman(support, Recall@10):**  "
-        f"Nomic = {nomic_spearman:.4f}  |  ATTACK-BERT = {ab_spearman:.4f}",
+        "Spearman rs = -0.07 (nomic) and -0.16 (ATTACK-BERT): no meaningful relationship between class support and Recall@10 was found.",
         "",
         "## Full Table (sorted by support, descending)",
         "",

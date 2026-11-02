@@ -11,9 +11,9 @@ This document establishes the experimental setup, evaluation metrics, and reprod
 
 ## 2. Dataset Definition
 
-The baseline evaluation uses the verified multilabel threat intelligence benchmark:
+The baseline evaluation uses the 15-sentence multilabel threat intelligence benchmark:
 * **Source**: Synthesized from public APT threat advisories and aligned with the **TRAM v1.3** schema (Center for Threat-Informed Defense).
-* **Sample Size**: 15 hand-verified evaluation sentences covering 11 distinct MITRE ATT&CK techniques across 8 tactics.
+* **Sample Size**: 15 curated evaluation sentences covering 11 distinct MITRE ATT&CK techniques across 8 tactics.
 * **Negative / Abstention Cases**: 20% of sentences contain non-adversarial text (proactive threat hunting notes, defensive remediation, multi-factor authentication mandates) to rigorously measure false-positive control.
 
 ---

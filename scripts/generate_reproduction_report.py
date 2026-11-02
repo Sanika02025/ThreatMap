@@ -1,17 +1,19 @@
 """
-generate_reproduction_report.py — Rewrite for honest reproduction study.
+generate_reproduction_report.py — Generator for honest reproduction report.
 
 Reads ONLY:
   - artifacts/retrieval_table3_real_results.json   (Table 3 results)
   - artifacts/llm_sample_scored_report.json         (LLM sample scores from scorer)
   - artifacts/bm25_rrf_results.json                 (BM25+RRF extension)
+  - artifacts/retrieval_ceiling.json                (Retrieval ceiling & error decomposition)
+  - artifacts/per_class_retrieval.json              (Per-class retrieval metrics)
   - data/tram2-data/multi_label.json                (TRAM dataset)
   - data/processed/mitre_attack_50_techniques.json  (50-class KB)
 
 Writes: artifacts/reproduction_report.md
 
 Hard rules:
-  - No phrases "systematically reproduced" or "confirmed paper behavior" unless numbers support it.
+  - No unsupported claims of reproduction or paper behavior unless numbers support it.
   - Every miss is marked "tested" or "untested hypothesis".
   - No claims beyond what is backed by a real run.
 """
@@ -28,6 +30,7 @@ BM25_RRF_FILE = BASE_DIR / "artifacts" / "bm25_rrf_results.json"
 TRAM_FILE = BASE_DIR / "data" / "tram2-data" / "multi_label.json"
 KB_FILE = BASE_DIR / "data" / "processed" / "mitre_attack_50_techniques.json"
 CEILING_FILE = BASE_DIR / "artifacts" / "retrieval_ceiling.json"
+PER_CLASS_FILE = BASE_DIR / "artifacts" / "per_class_retrieval.json"
 REPORT_OUT = BASE_DIR / "artifacts" / "reproduction_report.md"
 
 
@@ -187,6 +190,50 @@ def generate():
         "",
     ]
 
+    if PER_CLASS_FILE.exists():
+        with open(PER_CLASS_FILE, "r", encoding="utf-8") as f:
+            pc_data = json.load(f)
+        lines += [
+            "### Per-Class Retrieval Analysis",
+            "",
+            "Spearman rs = -0.07 (nomic) and -0.16 (ATTACK-BERT): no meaningful relationship between class support and Recall@10 was found.",
+            "",
+            "**Best 5 classes by Nomic Recall@10**:",
+            "",
+            "| Technique | Name | R@10 | Support |",
+            "| :--- | :--- | ---: | ---: |",
+        ]
+        for r in pc_data.get("top5_nomic", []):
+            lines.append(f"| {r['technique_id']} | {r['name']} | {r['recall10']:.2f}% | {r['support']} |")
+        lines += [
+            "",
+            "**Worst 5 classes by Nomic Recall@10**:",
+            "",
+            "| Technique | Name | R@10 | Support |",
+            "| :--- | :--- | ---: | ---: |",
+        ]
+        for r in pc_data.get("bottom5_nomic", []):
+            lines.append(f"| {r['technique_id']} | {r['name']} | {r['recall10']:.2f}% | {r['support']} |")
+        lines += [
+            "",
+            "**Best 5 classes by ATTACK-BERT Recall@10**:",
+            "",
+            "| Technique | Name | R@10 | Support |",
+            "| :--- | :--- | ---: | ---: |",
+        ]
+        for r in pc_data.get("top5_attack_bert", []):
+            lines.append(f"| {r['technique_id']} | {r['name']} | {r['recall10']:.2f}% | {r['support']} |")
+        lines += [
+            "",
+            "**Worst 5 classes by ATTACK-BERT Recall@10**:",
+            "",
+            "| Technique | Name | R@10 | Support |",
+            "| :--- | :--- | ---: | ---: |",
+        ]
+        for r in pc_data.get("bottom5_attack_bert", []):
+            lines.append(f"| {r['technique_id']} | {r['name']} | {r['recall10']:.2f}% | {r['support']} |")
+        lines.append("")
+
     # ── Table 2: LLM Experiments ─────────────────────────────────────────
     lines += [
         "---",
@@ -289,7 +336,7 @@ def generate():
     lines += [
         "---",
         "",
-        "## 4. LLM Candidate Adherence and Unlisted Predictions",
+        "## 4. LLM Candidate Adherence and Error Analysis",
         "",
         "### Candidate Adherence (inside vs outside top-10 candidates)",
         "",
@@ -301,6 +348,27 @@ def generate():
         "",
         "The model does not always stay inside its candidates: 5.4% to 11.4% of predicted codes fall outside the top-10 candidates provided in the prompt.",
         "",
+        "### False Positives on Unlabelled Sentences",
+        "",
+        "| Experiment | Total In-Scope FP | FP on Labelled Sentences | FP on Unlabelled Sentences | Share on Unlabelled |",
+        "| :--- | ---: | ---: | ---: | ---: |",
+    ]
+
+    for exp_num, exp_key in exp_order:
+        exp_data = exp_entries.get(exp_key, {})
+        m = exp_data.get("metrics", {})
+        pt = paper_targets_table2[exp_num]
+        name = pt["name"]
+        tot_fp = m.get("total_fp", 0)
+        fp_lab = m.get("fp_labelled", 0)
+        fp_unlab = m.get("fp_unlabelled", 0)
+        fp_pct = m.get("fp_unlabelled_pct", 0.0)
+        lines.append(f"| {name} | {tot_fp} | {fp_lab} | {fp_unlab} | {fp_pct:.1f}% |")
+
+    lines += [
+        "",
+        "Most false positives fall on sentences with no gold label, consistent with the paper's observation that low precision is the main weakness.",
+        "",
     ]
 
     if CEILING_FILE.exists():
@@ -310,16 +378,18 @@ def generate():
         lines += [
             "### Retrieval Ceiling & Error Decomposition (191 sentences, 54 gold labels)",
             "",
-            "| Experiment | Gold Labels | In Candidates | Candidate R@10 | TP (Selected) | Retr Misses | LLM Misses | Selection Rate | Larger Loss Stage |",
-            "| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | :--- |",
+            "| Experiment | Gold Labels | In Candidates | Candidate R@10 | TP (Selected) | Retr Misses | LLM Misses | Selection Rate |",
+            "| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
         ]
         for exp_k, r in c_res.items():
             lines.append(
                 f"| {r['label']} | {r['total_gold_labels']} | {r['gold_in_candidates']} | "
                 f"{r['candidate_recall_pct']:.2f}% | {r['tp']} | {r['gold_not_in_candidates']} | "
-                f"{r['gold_missed_by_llm']} | {r['selection_rate_pct']:.2f}% | {r['larger_loss_stage']} |"
+                f"{r['gold_missed_by_llm']} | {r['selection_rate_pct']:.2f}% |"
             )
         lines += [
+            "",
+            "With 54 gold labels, differences of 1-2 labels (e.g. #22: 6 retrieval misses vs 7 LLM misses) are not meaningful; no claim is made about which stage loses more.",
             "",
             "> **Definitions**:",
             "> - **Gold Labels**: In-scope technique annotations in the sample (54).",
@@ -337,6 +407,7 @@ def generate():
         "- \"Unlisted\" codes are those outside the 50 valid MITRE ATT&CK classes (e.g., hallucinated or non-existent sub-techniques), NOT codes outside the candidate list.",
         "- Paper unlisted rates: #22: 659 / 25,641 = 2.6%; #19: 2,223 / 23,944 = 9.3%.",
         "- Reproduction sample unlisted rates: #22: 21 / 426 = 4.9%; #19: 31 / 525 = 5.9%.",
+        "- Our rates (#22: 4.9%, #19: 5.9%) come from 191 sentences and the paper's from 19,178, so they are not directly comparable.",
         "- For BaseLLM (#19): No candidates in prompt (expected). Model predicts from parametric knowledge only.",
         "- For BaseRAG (#22), Optimized RAG (#25), Context 1-sent (#27): Top-10 candidate techniques are provided in the prompt for every sentence.",
         "- **The parser is correct**: `regex r'\\b(T\\d{4}(?:\\.\\d{3})?)\\b'` faithfully extracts all codes written by the model. Parser was NOT changed.",
@@ -412,7 +483,8 @@ def generate():
         "4. **Unperformed embedding / reranking variants**: ATTACK-BERT CLS pooling and CrossEncoder reranking with `max_length=512` were not run (hung on this hardware).",
         "5. **No separate development set**: All runs were evaluated directly on test data without a separate tuning set; no hyperparameter tuning claims are made.",
         "6. **Paper ordering not reproduced**: The paper's reported ordering BaseRAG (18.81%) > Optimized (15.40%) > Context 1 (13.58%) was NOT reproduced in our sample point estimates (17.86% < 19.17% < 21.17%). CIs overlap heavily, so no ranking among them can be claimed.",
-        "7. **Unexplained retrieval deviations**: The reranker reversal (improves +0.23% vs paper's -5.69% degradation) and the 4.2-point ATTACK-BERT gap (81.84% vs 86.05%) remain unexplained (untested hypotheses: candidate pool size, pair formatting, pooling, text cleaning).",
+        "7. **Unexplained retrieval deviations**: The reranker reversal (slight +0.23% increase vs paper's -5.69% degradation) and the 4.2-point ATTACK-BERT gap (81.84% vs 86.05%) remain unexplained (untested hypotheses: candidate pool size, pair formatting, pooling, text cleaning).",
+        "8. **Class support and retrieval performance**: Spearman rs = -0.07 (nomic) and -0.16 (ATTACK-BERT): no meaningful relationship between class support and Recall@10 was found.",
         "",
         "### Future Work",
         "",
@@ -441,7 +513,7 @@ def generate():
 
     REPORT_OUT.parent.mkdir(parents=True, exist_ok=True)
     with open(REPORT_OUT, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+        f.write("\n".join(lines) + "\n")
     print(f"Report written to {REPORT_OUT}")
 
 

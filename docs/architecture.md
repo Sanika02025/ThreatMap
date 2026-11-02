@@ -41,7 +41,7 @@ flowchart TD
 
     subgraph Assurance ["4. False-Positive Control & Interface"]
         O --> P["Abstention Engine (Confidence & Mitigation Filter)"]
-        P --> Q["Verified Structured Prediction"]
+        P --> Q["Validated Structured Prediction"]
         
         Q --> R["Streamlit Professional Dashboard"]
         Q --> S["Audit Exports (CSV / JSON / JSONL)"]
