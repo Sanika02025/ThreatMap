@@ -27,6 +27,7 @@ LLM_SCORED_FILE = BASE_DIR / "artifacts" / "llm_sample_scored_report.json"
 BM25_RRF_FILE = BASE_DIR / "artifacts" / "bm25_rrf_results.json"
 TRAM_FILE = BASE_DIR / "data" / "tram2-data" / "multi_label.json"
 KB_FILE = BASE_DIR / "data" / "processed" / "mitre_attack_50_techniques.json"
+CEILING_FILE = BASE_DIR / "artifacts" / "retrieval_ceiling.json"
 REPORT_OUT = BASE_DIR / "artifacts" / "reproduction_report.md"
 
 
@@ -300,6 +301,37 @@ def generate():
         "",
         "The model does not always stay inside its candidates: 5.4% to 11.4% of predicted codes fall outside the top-10 candidates provided in the prompt.",
         "",
+    ]
+
+    if CEILING_FILE.exists():
+        with open(CEILING_FILE, "r", encoding="utf-8") as f:
+            ceil_data = json.load(f)
+        c_res = ceil_data.get("results", {})
+        lines += [
+            "### Retrieval Ceiling & Error Decomposition (191 sentences, 54 gold labels)",
+            "",
+            "| Experiment | Gold Labels | In Candidates | Candidate R@10 | TP (Selected) | Retr Misses | LLM Misses | Selection Rate | Larger Loss Stage |",
+            "| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | :--- |",
+        ]
+        for exp_k, r in c_res.items():
+            lines.append(
+                f"| {r['label']} | {r['total_gold_labels']} | {r['gold_in_candidates']} | "
+                f"{r['candidate_recall_pct']:.2f}% | {r['tp']} | {r['gold_not_in_candidates']} | "
+                f"{r['gold_missed_by_llm']} | {r['selection_rate_pct']:.2f}% | {r['larger_loss_stage']} |"
+            )
+        lines += [
+            "",
+            "> **Definitions**:",
+            "> - **Gold Labels**: In-scope technique annotations in the sample (54).",
+            "> - **In Candidates**: Gold labels present in the top-10 candidate list given to the LLM.",
+            "> - **Candidate R@10**: Upper ceiling on recall achievable if the LLM selected every valid candidate.",
+            "> - **Retr Misses**: Gold labels not retrieved into the top-10 candidates (retrieval failure).",
+            "> - **LLM Misses**: Gold labels present in candidates but not predicted by the LLM (generation failure).",
+            "> - **Selection Rate**: `TP / In Candidates`.",
+            "",
+        ]
+
+    lines += [
         "### Unlisted Predictions (codes outside the 50 classes)",
         "",
         "- \"Unlisted\" codes are those outside the 50 valid MITRE ATT&CK classes (e.g., hallucinated or non-existent sub-techniques), NOT codes outside the candidate list.",
@@ -370,24 +402,26 @@ def generate():
     lines += [
         "---",
         "",
-        "## 7. Limitations",
+        "## 7. Limitations & Future Work",
         "",
-        "1. **Sample size**: LLM evaluation used ~191 sentences (2 reports) vs paper's 19,178. "
-        "Micro F1 can vary widely at this scale; comparisons are directional only.",
-        "2. **Model size**: Only llama3.1:8b-instruct-q4_0 was run. The paper's best results "
-        "used 70B models (Llama 3.1 70B, DeepSeek-R1 70B). Those are NOT RUN here.",
-        "3. **No summarized descriptions (Item 5)**: The Appendix C summarization experiment "
-        "was not run. Paper target for nomic+summaries: R@10=83.93%.",
-        "4. **NumPy index vs Weaviate**: The paper used a Weaviate vector database. "
-        "This reproduction uses a NumPy dot-product index. Results should be equivalent "
-        "for exact cosine search but may differ if Weaviate applied HNSW approximation.",
-        "5. **Nomic prefix choice**: `search_query:` / `search_document:` follows nomic's "
-        "documentation. The paper does not explicitly state which prefix was used. "
-        "Both prefix and no-prefix results are reported.",
-        "6. **Reranker reversal**: Only max_length=256 was run (R@10 80.75%, vs nomic baseline 80.52%). "
-        "The reranker did not degrade recall as in the paper (74.59%); the cause is unidentified. "
-        "Untested hypotheses: max_length, input formatting of sentence/description pairs, candidate pool, description cleaning.",
-        "7. **Sample scope**: All 191 sentences from 2 complete reports evaluated for #19, #22, #25, #27.",
+        "### Limitations",
+        "",
+        "1. **Sample size**: LLM evaluation used a 191-sentence sample (2 complete reports) containing 49 sentences with in-scope gold labels (54 label instances across 23 classes), compared to the paper's 19,178 sentences. Bootstrap CIs are wide (e.g., #22: [13.42, 22.68]%) and comparisons are directional only.",
+        "2. **Model scale & hardware**: Only `llama3.1:8b-instruct-q4_0` was evaluated on CPU (Intel i5-12450H, 16 GB RAM, no GPU). The paper's primary and best configurations (Llama 3.1 70B and DeepSeek-R1 70B) could not be run and are marked `NOT RUN (hardware — no GPU)`.",
+        "3. **Unperformed paper experiments**: Summarized descriptions (Appendix C, target R@10=83.93%), few-shot prompting (#28), full-description prompt variants (#23, #24), and 2-sentence context window (#26) were not run.",
+        "4. **Unperformed embedding / reranking variants**: ATTACK-BERT CLS pooling and CrossEncoder reranking with `max_length=512` were not run (hung on this hardware).",
+        "5. **No separate development set**: All runs were evaluated directly on test data without a separate tuning set; no hyperparameter tuning claims are made.",
+        "6. **Paper ordering not reproduced**: The paper's reported ordering BaseRAG (18.81%) > Optimized (15.40%) > Context 1 (13.58%) was NOT reproduced in our sample point estimates (17.86% < 19.17% < 21.17%). CIs overlap heavily, so no ranking among them can be claimed.",
+        "7. **Unexplained retrieval deviations**: The reranker reversal (improves +0.23% vs paper's -5.69% degradation) and the 4.2-point ATTACK-BERT gap (81.84% vs 86.05%) remain unexplained (untested hypotheses: candidate pool size, pair formatting, pooling, text cleaning).",
+        "",
+        "### Future Work",
+        "",
+        "- Full-corpus evaluation (19,178 sentences) with GPU acceleration.",
+        "- Evaluation of 70B parameter models (Llama 3.1 70B, DeepSeek-R1 70B).",
+        "- Appendix C description summarization pipeline evaluation.",
+        "- Systematic ablation of CrossEncoder reranker parameters (max_length, pool size k=10/15/20).",
+        "- ATTACK-BERT CLS pooling evaluation.",
+        "- Multi-dataset cross-validation beyond TRAM v1.3.",
         "",
         "---",
         "",
