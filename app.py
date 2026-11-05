@@ -641,10 +641,13 @@ elif page == "Analyze Threat Report":
                     else:
                         st.session_state["rag_results"] = rag_results
                         st.session_state["analysis_mode_used"] = "llm"
+                        n_mapped_s = sum(1 for r in rag_results if r["status"] == "MAPPED")
+                        n_nom_s = sum(1 for r in rag_results if r["status"] == NO_MAPPING)
+                        n_ref_s = sum(1 for r in rag_results if r["status"] == REFUSED)
                         st.success(
                             f"Done! {len(sentences)} sentences processed. "
-                            f"{sum(1 for r in rag_results if r['labels'])} mapped, "
-                            f"{sum(1 for r in rag_results if not r['labels'])} NO_MAPPING."
+                            f"{n_mapped_s} mapped, {n_nom_s} NO_MAPPING, "
+                            f"{n_ref_s} REFUSED_OR_UNPARSEABLE."
                         )
             else:
                 # --- Retrieval-only mode ---
@@ -707,27 +710,54 @@ elif page == "Results & Evidence":
         )
 
         for i, r in enumerate(rag_results, 1):
-            labels_str = ", ".join(r["labels"]) if r["labels"] else "**NO_MAPPING**"
+            status = r["status"]
+            if status == "MAPPED":
+                labels_str = ", ".join(r["labels"])
+                badge = f"✅ {labels_str}"
+            elif status == NO_MAPPING:
+                labels_str = "NO_MAPPING"
+                badge = "⬜ NO_MAPPING"
+            else:  # REFUSED
+                labels_str = "REFUSED_OR_UNPARSEABLE"
+                badge = "🚫 REFUSED_OR_UNPARSEABLE"
+
             with st.expander(
-                f"[{i}] {r['sentence'][:90]}{'...' if len(r['sentence']) > 90 else ''}  →  {labels_str}",
+                f"[{i}] {r['sentence'][:85]}{'...' if len(r['sentence']) > 85 else ''}  →  {badge}",
                 expanded=False,
             ):
                 st.markdown(f"**Sentence:** {r['sentence']}")
-                st.markdown(f"**Final labels:** `{labels_str}`")
 
-                # Candidates table
-                st.markdown(f"**Top-{RAG_K} retrieved candidates:**")
+                if status == "MAPPED":
+                    st.success(f"**Labels:** `{labels_str}`")
+                elif status == NO_MAPPING:
+                    st.info("**Status: NO_MAPPING** — model explicitly said no technique applies.")
+                else:
+                    st.warning(
+                        "**Status: REFUSED_OR_UNPARSEABLE** — reply contained no T-code and "
+                        "no 'No Mapping' phrase. This is a refusal, safety filter, or "
+                        "otherwise unparseable response. The raw reply is shown below."
+                    )
+
+                # Candidates table — order determined by RRF fused score;
+                # semantic cosine similarity shown separately for reference.
+                st.markdown(
+                    f"**Top-{RAG_K} retrieved candidates** "
+                    f"*(ordered by RRF score = Σ 1/(60 + rank) over BM25 + semantic lists; "
+                    f"cosine sim shown separately — it does NOT determine order)*:"
+                )
                 cand_rows = [
                     {
-                        "Rank": c.fused_rank,
+                        "RRF Rank": c.fused_rank,
                         "ID": c.technique_id,
                         "Name": c.technique_name,
-                        "Sem Score": c.semantic_score,
-                        "Method": c.retrieval_method,
+                        "RRF Score (ordering)": c.fused_score,
+                        "Cosine Sim (reference)": c.semantic_score,
+                        "BM25 Rank": c.lexical_rank,
+                        "Sem Rank": c.semantic_rank,
                     }
                     for c in r["candidates"]
                 ]
-                st.dataframe(pd.DataFrame(cand_rows), use_container_width=True, height=250)
+                st.dataframe(pd.DataFrame(cand_rows), use_container_width=True, height=270)
 
                 # Raw LLM reply
                 st.markdown("**Model's raw reply:**")
@@ -741,11 +771,24 @@ elif page == "Results & Evidence":
             rows.append(
                 {
                     "Sentence": r["sentence"][:100],
-                    "Labels": ", ".join(r["labels"]) if r["labels"] else "NO_MAPPING",
-                    "Candidates": " | ".join(c.technique_id for c in r["candidates"]),
+                    "Status": r["status"],
+                    "Labels": ", ".join(r["labels"]) if r["labels"] else "—",
+                    "Candidates (IDs)": " | ".join(c.technique_id for c in r["candidates"]),
                 }
             )
-        st.dataframe(pd.DataFrame(rows), use_container_width=True)
+        df_summary = pd.DataFrame(rows)
+
+        def _colour_status(val):
+            if val == "MAPPED":
+                return "background-color: #dcfce7; color: #166534"
+            if val == REFUSED:
+                return "background-color: #fef9c3; color: #854d0e"
+            return ""  # NO_MAPPING — neutral
+
+        st.dataframe(
+            df_summary.style.applymap(_colour_status, subset=["Status"]),
+            use_container_width=True,
+        )
 
     # ---- Retrieval-only results ----
     elif mode_used == "retrieval" and "analysis_result" in st.session_state:
