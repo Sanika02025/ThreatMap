@@ -191,3 +191,4 @@ class TestParseRagReply:
         status, codes = parse_rag_reply("The quick brown fox.", self.CANDS)
         assert status == REFUSED
         assert codes == []
+
