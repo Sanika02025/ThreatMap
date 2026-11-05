@@ -1,0 +1,9 @@
+Experiment ID,Method,Micro F1,Macro F1,Recall@1,Recall@5,MRR,Coverage,Abstention Rate,Runtime (s),Status
+Exp A,Lexical Retrieval Only (BM25),0.2759,0.16,0.2857,0.6429,0.5152,1.0,0.0,0.078,Completed
+Exp B,Semantic Retrieval Only (Dense),0.08,0.0417,0.0714,0.2143,0.1545,0.7333,0.2667,0.021,Completed
+Exp C,Hybrid Retrieval (RRF),0.1379,0.0741,0.1429,0.5,0.3712,1.0,0.0,0.113,Completed
+Exp D,Hybrid (Weighted Score Fusion),0.2069,0.1154,0.2143,0.5,0.4318,1.0,0.0,0.128,Completed
+Exp E,Hybrid + Cross-Encoder Reranker,0.2069,0.1154,0.2143,0.5,0.4394,1.0,0.0,4.846,Completed
+Exp F,Hybrid + Local LLM Classification,0.0,0.0,0.1429,0.5,0.3712,0.0,1.0,91.808,Completed
+Exp G,Hybrid + Context-Aware LLM Classification,0.0,0.0,0.1429,0.5,0.3712,0.0,1.0,91.817,Completed
+Exp H,Hybrid + Calibrated Abstention,0.1379,0.0741,0.1429,0.4286,0.3485,1.0,0.0,0.17,Completed

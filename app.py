@@ -121,6 +121,10 @@ KB_FULL_PATH = BASE_DIR / "data" / "processed" / "mitre_attack_enterprise.json"
 
 CODE_RE = re.compile(r"\b(T\d{4}(?:\.\d{3})?)\b")
 
+# Sentinel values for LLM reply classification
+NO_MAPPING = "NO_MAPPING"
+REFUSED = "REFUSED_OR_UNPARSEABLE"
+
 # ---------------------------------------------------------
 # KB & Pipeline helpers
 # ---------------------------------------------------------
@@ -235,21 +239,36 @@ def call_ollama_rag(messages: List[Dict]) -> Tuple[str, str]:
     return content, ""
 
 
-def parse_rag_reply(raw: str, candidate_ids: set) -> List[str]:
+def parse_rag_reply(raw: str, candidate_ids: set) -> Tuple[str, List[str]]:
     """
-    Parse technique IDs from raw LLM reply using regex \\b(T\\d{4}(\\.\\d{3})?)\\b.
-    Returns list of parsed codes (may be empty -> NO_MAPPING).
+    Parse technique IDs from a raw LLM reply.
+
+    Returns (status, codes) where status is one of:
+      - "MAPPED"              : at least one T-code was found; codes = parsed IDs
+      - NO_MAPPING ("NO_MAPPING") : reply explicitly says "No Mapping" (case-insensitive)
+                                    or is an empty/whitespace string; codes = []
+      - REFUSED ("REFUSED_OR_UNPARSEABLE") : reply has no T-code and no "No Mapping" phrase
+                                             (refusal, hallucination, or other unparseable text)
+                                             codes = []
+
+    Rule: "No Mapping" is the ONLY signal for intentional abstention.
+    A reply containing T-codes is always MAPPED, regardless of other text.
+    A reply with neither T-codes nor "No Mapping" is REFUSED_OR_UNPARSEABLE.
     Does NOT filter to candidates — reports whatever the model returned.
     """
-    if not raw:
-        return []
-    no_mapping_patterns = [
-        "no mapping", "no applicable", "no technique", "no mitre"
-    ]
-    lower = raw.lower()
-    if any(p in lower for p in no_mapping_patterns) and not CODE_RE.search(raw):
-        return []
-    return list(dict.fromkeys(CODE_RE.findall(raw)))  # unique, order-preserved
+    if not raw or not raw.strip():
+        return NO_MAPPING, []
+
+    codes = list(dict.fromkeys(CODE_RE.findall(raw)))  # unique, order-preserved
+    if codes:
+        return "MAPPED", codes
+
+    # No T-codes found — distinguish explicit abstention from refusal
+    if "no mapping" in raw.lower():
+        return NO_MAPPING, []
+
+    # Has text but no T-code and no "No Mapping" phrase → refusal or unparseable
+    return REFUSED, []
 
 
 # ---------------------------------------------------------
@@ -328,18 +347,20 @@ def rag_attack_analyze(
                     "candidates": raw_cands,
                     "raw_reply": None,
                     "labels": [],
+                    "status": "ERROR",
                     "error": error,
                 }
             )
             continue
 
-        parsed = parse_rag_reply(raw_reply, set(cand_ids))
+        reply_status, parsed = parse_rag_reply(raw_reply, set(cand_ids))
         results.append(
             {
                 "sentence": sent,
                 "candidates": raw_cands,
                 "raw_reply": raw_reply,
-                "labels": parsed,  # empty list = NO_MAPPING
+                "labels": parsed,          # list of T-codes, or [] for NO_MAPPING/REFUSED
+                "status": reply_status,    # "MAPPED", NO_MAPPING, or REFUSED
                 "error": "",
             }
         )
@@ -663,16 +684,20 @@ elif page == "Results & Evidence":
 
         # Summary metrics
         n_total = len(rag_results)
-        n_mapped = sum(1 for r in rag_results if r["labels"])
-        n_no_map = n_total - n_mapped
+        n_mapped = sum(1 for r in rag_results if r["status"] == "MAPPED")
+        n_no_map = sum(1 for r in rag_results if r["status"] == NO_MAPPING)
+        n_refused = sum(1 for r in rag_results if r["status"] == REFUSED)
 
-        m1, m2, m3 = st.columns(3)
+        m1, m2, m3, m4 = st.columns(4)
         with m1:
             st.metric("Total Sentences", n_total)
         with m2:
             st.metric("Mapped (technique assigned)", n_mapped)
         with m3:
             st.metric("NO_MAPPING", n_no_map)
+        with m4:
+            st.metric("REFUSED_OR_UNPARSEABLE", n_refused,
+                      help="Reply had no T-code and no 'No Mapping' — refusal, safety filter, or unparseable text.")
 
         st.divider()
         st.subheader("Sentence-Level Results (RAG-ATT&CK / LLM selection)")
