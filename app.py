@@ -646,6 +646,8 @@ elif page == "Analyze Threat Report":
                         n_ref_s = sum(1 for r in rag_results if r["status"] == REFUSED)
                         st.success(
                             f"Done! {len(sentences)} sentences processed. "
+                            f"{sum(1 for r in rag_results if r['labels'])} mapped, "
+                            f"{sum(1 for r in rag_results if not r['labels'])} NO_MAPPING."
                             f"{n_mapped_s} mapped, {n_nom_s} NO_MAPPING, "
                             f"{n_ref_s} REFUSED_OR_UNPARSEABLE."
                         )
@@ -710,6 +712,7 @@ elif page == "Results & Evidence":
         )
 
         for i, r in enumerate(rag_results, 1):
+            labels_str = ", ".join(r["labels"]) if r["labels"] else "**NO_MAPPING**"
             status = r["status"]
             if status == "MAPPED":
                 labels_str = ", ".join(r["labels"])
@@ -776,6 +779,19 @@ elif page == "Results & Evidence":
                     "Candidates (IDs)": " | ".join(c.technique_id for c in r["candidates"]),
                 }
             )
+        df_summary = pd.DataFrame(rows)
+
+        def _colour_status(val):
+            if val == "MAPPED":
+                return "background-color: #dcfce7; color: #166534"
+            if val == REFUSED:
+                return "background-color: #fef9c3; color: #854d0e"
+            return ""
+
+        st.dataframe(
+            df_summary.style.map(_colour_status, subset=["Status"]),
+            use_container_width=True,
+        )
         df_summary = pd.DataFrame(rows)
 
         def _colour_status(val):
